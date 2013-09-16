@@ -22,8 +22,10 @@ VBOXDIR = "#{BUILDDIR}/vbox"
 # then,
 # Edit the PEVERSION to something like:
 # PEVERSION = '3.0.1-rc0-58-g9275a0f'
-PEVERSION = '3.0.1'
-PE_RELEASE_URL = "https://s3.amazonaws.com/pe-builds/released/#{PEVERSION}"
+PEVERSION = ENV['PEVERSION'] || PEVERSION = '3.0.1'
+PE_RELEASE_URL_PREFIX = ENV['PE_RELEASE_URL_PREFIX'] || PE_RELEASE_URL_PREFIX = "https://s3.amazonaws.com/pe-builds/released/"
+PE_RELEASE_URL = "#{PE_RELEASE_URL_PREFIX}/#{PEVERSION}"
+ptbuser = ENV['ptbuser'] || ptbuser = 'puppetlabs'
 $settings = Hash.new
 
 desc "Build and populate data directory"
@@ -77,15 +79,8 @@ task :init do
     ptbrepo = ptbrepo_default
     cputs "Current repo url: #{ptbrepo} (`rm` local repo to reset)"
   else
-    # Set PTB user
-    cprint "Please choose a github user for puppetlabs-training-bootstrap [puppetlabs]: "
-    ptbuser = STDIN.gets.chomp
-    ptbuser = 'puppetlabs' if ptbuser.empty?
-
     ptbrepo_default = "git@github.com:#{ptbuser}/puppetlabs-training-bootstrap.git"
-    cprint "Please choose a repo url [#{ptbrepo_default}]: "
-    ptbrepo = STDIN.gets.chomp
-    ptbrepo = ptbrepo_default if ptbrepo.empty?
+    ptbrepo = ENV['ptbrepo_default'] || ptbrepo = ptbrepo_default
   end
 
   # Set PTB branch
@@ -94,9 +89,7 @@ task :init do
   else
     ptbbranch_default = 'master'
   end
-  cprint "Please choose a branch to use for puppetlabs-training-bootstrap [#{ptbbranch_default}]: "
-  ptbbranch = STDIN.gets.chomp
-  ptbbranch = ptbbranch_default if ptbbranch.empty?
+  ptbbranch = ENV['ptbbranch_default'] || ptbbranch = ptbbranch_default
   cputs "Cloning ptb..."
   gitclone ptbrepo, ptbrepo_destination, ptbbranch
 end
