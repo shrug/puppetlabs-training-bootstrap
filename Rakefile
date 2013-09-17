@@ -23,7 +23,7 @@ VBOXDIR = "#{BUILDDIR}/vbox"
 # Edit the PEVERSION to something like:
 # PEVERSION = '3.0.1-rc0-58-g9275a0f'
 PEVERSION = ENV['PEVERSION'] || PEVERSION = '3.0.1'
-PE_RELEASE_URL_PREFIX = ENV['PE_RELEASE_URL_PREFIX'] || PE_RELEASE_URL_PREFIX = "https://s3.amazonaws.com/pe-builds/released/"
+PE_RELEASE_URL_PREFIX = ENV['PE_RELEASE_URL_PREFIX'] || PE_RELEASE_URL_PREFIX = "https://s3.amazonaws.com/pe-builds/released"
 PE_RELEASE_URL = "#{PE_RELEASE_URL_PREFIX}/#{PEVERSION}"
 ptbuser = ENV['ptbuser'] || ptbuser = 'puppetlabs'
 $settings = Hash.new
