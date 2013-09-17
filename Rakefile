@@ -36,6 +36,8 @@ task :init do
       FileUtils.mkdir_p(dir)
     end
   end
+  system("gpg --keyserver pgp.mit.edu --recv-key 4BD6EC30")
+  abort("Could not import public key: #{$?}") if $? != 0
 
   ['Debian','Centos'].each do |vmos|
     case vmos
@@ -56,7 +58,7 @@ task :init do
     end
     cputs "Verifying signature"
     system("gpg --verify --always-trust #{installer}.asc #{installer}")
-    puts $?
+    abort("Signature verify returned #{$?}") if $? != 0
   end
 
   cputs "Cloning puppet..."
