@@ -292,7 +292,7 @@ task :startvm, [:vmos] do |t,args|
   prompt_vmos(args.vmos)
 
   cputs "Starting #{$settings[:vmname]}"
-  system("VBoxManage startvm '#{$settings[:vmname]}'")
+  system("VBoxHeadless --startvm '#{$settings[:vmname]}'")
 end
 
 desc "Reload the VM"
