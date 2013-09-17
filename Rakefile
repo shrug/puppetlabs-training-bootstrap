@@ -480,17 +480,10 @@ def prompt_vmos(osname=nil)
 end
 
 def prompt_vmtype(type=nil)
-  type = type || ENV['vmtype']
-  loop do
-    cprint "Please choose the type of VM - one of 'training' or 'learning' [training]: "
-    type = STDIN.gets.chomp
-    type = 'training' if type.empty?
+  type = ENV['vmtype'] || type = 'learning'
     if type !~ /(training|learning)/
-      cputs "Incorrect/unknown type of VM: #{type}"
-    else
-      break #loop
+      abort("Incorrect/unknown type of VM: #{type}")
     end
-  end unless type
   $settings[:vmtype] = type
 end
 
