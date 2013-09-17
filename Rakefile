@@ -467,17 +467,7 @@ def prompt_del(del=nil)
 end
 
 def prompt_vmos(osname=nil)
-  osname = osname || ENV['vmos']
-  loop do
-    cprint "Please choose an OS type of 'Centos' or 'Debian' [Centos]: "
-    osname = STDIN.gets.chomp
-    osname = 'Centos' if osname.empty?
-    if osname !~ /(Debian|Centos)/
-      cputs "Incorrect/unknown OS: #{osname}"
-    else
-      break #loop
-    end
-  end unless osname
+  osname = ENV['vmos'] || osname= 'Centos'
   $settings[:vmos] = osname
 end
 
