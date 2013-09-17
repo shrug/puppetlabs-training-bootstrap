@@ -219,9 +219,7 @@ task :createiso, [:vmos,:vmtype] do |t,args|
     iso_default = iso_file
   end
   if ! File.exist?("#{KSISODIR}/#{$settings[:vmos]}.iso")
-    cprint "Please specify #{$settings[:vmos]} ISO path or url [#{iso_default}]: "
-    iso_uri = STDIN.gets.chomp.rstrip
-    iso_uri = iso_default if iso_uri.empty?
+    iso_uri = ENV['iso_uri'] || iso_uri = iso_default
     if iso_uri != iso_file
       case iso_uri
       when /^(http|https):\/\//
@@ -241,7 +239,8 @@ task :createiso, [:vmos,:vmtype] do |t,args|
   end
   # Extract the OS version from the iso filename as debian and centos are the
   # same basic format and get caught by the match group below
-  iso_version = iso_url[/^.*-(\d+\.\d\.?\d?)-.*\.iso$/,1]
+  iso_version = iso_default[/^.*-(\d+\.\d+\.?\d?)-.*\.iso$/,1]
+  cputs "iso_version of #{iso_default} is #{iso_version}"
   if $settings[:vmtype] == 'training'
     $settings[:vmname] = "#{$settings[:vmos]}-#{iso_version}-pe-#{PEVERSION}".downcase
   else
