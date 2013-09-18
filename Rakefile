@@ -26,9 +26,18 @@ VBOXDIR = "#{BUILDDIR}/vbox"
 # then,
 # Edit the PEVERSION to something like:
 # PEVERSION = '3.0.1-rc0-58-g9275a0f'
+
+PESTATUS = ENV['PESTATUS'] || PESTATUS = 'release'
 PEVERSION = ENV['PEVERSION'] || PEVERSION = '3.0.1'
-PE_RELEASE_URL_PREFIX = ENV['PE_RELEASE_URL_PREFIX'] || PE_RELEASE_URL_PREFIX = "https://s3.amazonaws.com/pe-builds/released"
-PE_RELEASE_URL = "#{PE_RELEASE_URL_PREFIX}/#{PEVERSION}"
+pevers = PEVERSION.split('.')
+if PESTATUS == 'release'
+  PE_RELEASE_URL_PREFIX = "https://s3.amazonaws.com/pe-builds/released"
+elsif PESTATUS == 'test'
+  PE_RELEASE_URL_PREFIX = "http://neptune.delivery.puppetlabs.net/#{pevers[0]}.#{pevers[1]}/ci-ready/"
+else
+  abort("Unknown status #{PESTATUS}: use \"release\" or \"test\"")
+end
+  PE_RELEASE_URL = "#{PE_RELEASE_URL_PREFIX}/#{PEVERSION}"
 ptbuser = ENV['ptbuser'] || ptbuser = 'puppetlabs'
 $settings = Hash.new
 
@@ -50,19 +59,29 @@ task :init do
     when 'Centos'
       pe_install_suffix = '-el-6-i386'
     end
-    pe_tarball = "puppet-enterprise-#{PEVERSION}#{pe_install_suffix}.tar.gz"
-    installer = "#{CACHEDIR}/#{pe_tarball}"
-    unless File.exist?(installer)
-      cputs "Downloading #{vmos} PE tarball #{PEVERSION}..."
-      download "#{PE_RELEASE_URL}/#{pe_tarball}", installer
+    # This is horrible, fix this
+    if PESTATUS == 'release'
+      pe_tarball = "puppet-enterprise-#{PEVERSION}#{pe_install_suffix}.tar.gz"
+      installer = "#{CACHEDIR}/#{pe_tarball}"
+      unless File.exist?(installer)
+        cputs "Downloading #{vmos} PE tarball #{PEVERSION}..."
+        download "#{PE_RELEASE_URL}/#{pe_tarball}", installer
+      end
+      unless File.exist?("#{installer}.asc")
+        cputs "Downloading #{vmos} PE signature asc file for #{PEVERSION}..."
+        download "#{PE_RELEASE_URL}/#{pe_tarball}.asc", "#{CACHEDIR}/#{pe_tarball}.asc"
+      end
+      cputs "Verifying signature"
+      system("gpg --verify --always-trust #{installer}.asc #{installer}")
+      abort("Signature verify returned #{$?}") if $? != 0
+    elsif PESTATUS == 'test'
+      pe_tarball = "puppet-enterprise-#{PEVERSION}#{pe_install_suffix}.tar"
+      installer = "#{CACHEDIR}/#{pe_tarball}"
+      unless File.exist?(installer)
+        cputs "Downloading #{vmos} PE tarball #{PEVERSION}..."
+        download "#{PE_RELEASE_URL}/#{pe_tarball}", installer
+      end
     end
-    unless File.exist?("#{installer}.asc")
-      cputs "Downloading #{vmos} PE signature asc file for #{PEVERSION}..."
-      download "#{PE_RELEASE_URL}/#{pe_tarball}.asc", "#{CACHEDIR}/#{pe_tarball}.asc"
-    end
-    cputs "Verifying signature"
-    system("gpg --verify --always-trust #{installer}.asc #{installer}")
-    abort("Signature verify returned #{$?}") if $? != 0
   end
 
   cputs "Cloning puppet..."
@@ -130,7 +149,7 @@ task :createvm, [:vmos,:vmtype,:mem] do |t,args|
     system("VBoxManage createvm --name '#{$settings[:vmname]}' --basefolder '#{dir}' --register --ostype #{ostype}")
     Dir.chdir("#{dir}/#{$settings[:vmname]}")
     cputs "Configuring VM settings..."
-    system("VBoxManage modifyvm '#{$settings[:vmname]}' --memory #{args.mem} --nic1 nat --usb off --audio none --synthcpu on --hwvirtex off --acpi off --pae on")
+    system("VBoxManage modifyvm '#{$settings[:vmname]}' --memory #{args.mem} --nic1 nat --usb off --audio none --synthcpu on --hwvirtex off --acpi on --pae on")
     system("VBoxManage storagectl '#{$settings[:vmname]}' --name 'IDE Controller' --add ide")
     system("VBoxManage createhd --filename 'box-disk1.vmdk' --size 8192 --format VMDK")
     system("VBoxManage storageattach '#{$settings[:vmname]}' --storagectl 'IDE Controller' --port 0 --device 0 --type hdd --medium 'box-disk1.vmdk'")
