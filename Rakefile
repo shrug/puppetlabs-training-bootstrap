@@ -367,7 +367,7 @@ end
 task :createvmx, [:vmos] => [:createovf] do |t,args|
   args.with_defaults(:vmos => $settings[:vmos])
   prompt_vmos(args.vmos)
-  myos = `uname -r | awk '{print $1}'`
+  myos = `uname -s`
   if myos =~ /Darwin/
     ovftool_default = '/Applications/VMware OVF Tool/ovftool' #XXX Dynamicize this
   elsif myos =~ /Linux/
