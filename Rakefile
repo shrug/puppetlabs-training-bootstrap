@@ -344,8 +344,15 @@ end
 task :createvmx, [:vmos] => [:createovf] do |t,args|
   args.with_defaults(:vmos => $settings[:vmos])
   prompt_vmos(args.vmos)
-  ovftool_default = '/Applications/VMware OVF Tool/ovftool' #XXX Dynamicize this
-
+  myos = `uname -r | awk '{print $1}'`
+  if myos =~ /Darwin/
+    ovftool_default = '/Applications/VMware OVF Tool/ovftool' #XXX Dynamicize this
+  elsif myos =~ /Linux/
+    ovftool_default = '/usr/bin/ovftool'
+  else
+    abort("Not tested for this platform: #{myos}")
+  end
+    
   Rake::Task[:unmountiso].invoke($settings[:vmos])
   cputs "Converting OVF to VMX..."
   FileUtils.rm_rf("#{VMWAREDIR}/#{$settings[:vmname]}-vmware") if File.directory?("#{VMWAREDIR}/#{$settings[:vmname]}-vmware")
