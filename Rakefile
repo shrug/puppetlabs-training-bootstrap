@@ -7,7 +7,11 @@ require 'gpgme'
 
 STDOUT.sync = true
 BASEDIR = File.dirname(__FILE__)
-SITESDIR = ENV['HOME'] + "/Sites"
+if ENV['USER'] == 'jenkins' || ENV['USER'] == 'root'
+  SITESDIR = "/srv/builder/Sites"
+else
+  SITESDIR = ENV['HOME'] + "/Sites"
+end
 BUILDDIR = "#{SITESDIR}/build"
 CACHEDIR = "#{SITESDIR}/cache"
 KSISODIR = "#{BUILDDIR}/isos"
