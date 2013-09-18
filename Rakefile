@@ -383,7 +383,7 @@ task :createvmx, [:vmos] => [:createovf] do |t,args|
   system("'#{ovftool_default}' --lax --compress=9 --targetType=VMX '#{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}.ovf' '#{VMWAREDIR}/#{$settings[:vmname]}-vmware'")
 
   cputs 'Changing virtualhw.version = "9" to "8"'
-  vmxpath = "#{VMWAREDIR}/#{$settings[:vmname]}-vmware/#{$settings[:vmname]}.vmwarevm/#{$settings[:vmname]}.vmx"
+  vmxpath = "#{VMWAREDIR}/#{$settings[:vmname]}-vmware/#{$settings[:vmname]}/#{$settings[:vmname]}.vmx"
   content = File.read(vmxpath)
   content = content.gsub(/^virtualhw\.version = "9"$/, 'virtualhw.version = "8"')
   File.open(vmxpath, 'w') { |f| f.puts content }
@@ -547,5 +547,10 @@ end
 
 def cprint(string)
   print "\033[1m#{string}\033[0m"
+end
+
+def get_pe(status, version)
+  
+  
 end
 # vim: set sw=2 sts=2 et tw=80 :
