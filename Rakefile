@@ -85,7 +85,7 @@ task :init do
     ptbrepo = ptbrepo_default
     cputs "Current repo url: #{ptbrepo} (`rm` local repo to reset)"
   else
-    ptbrepo_default = "git@github.com:#{ptbuser}/puppetlabs-training-bootstrap.git"
+    ptbrepo_default = "git://github.com/#{ptbuser}/puppetlabs-training-bootstrap.git"
     ptbrepo = ENV['ptbrepo_default'] || ptbrepo = ptbrepo_default
   end
 
