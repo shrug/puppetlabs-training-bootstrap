@@ -40,6 +40,7 @@ end
   PE_RELEASE_URL = "#{PE_RELEASE_URL_PREFIX}/#{PEVERSION}"
 ptbuser = ENV['ptbuser'] || ptbuser = 'puppetlabs'
 $settings = Hash.new
+hostos=''
 
 desc "Build and populate data directory"
 task :init do
@@ -367,10 +368,10 @@ end
 task :createvmx, [:vmos] => [:createovf] do |t,args|
   args.with_defaults(:vmos => $settings[:vmos])
   prompt_vmos(args.vmos)
-  myos = `uname -s`
-  if myos =~ /Darwin/
+  hostos = `uname -s`
+  if hostos =~ /Darwin/
     ovftool_default = '/Applications/VMware OVF Tool/ovftool' #XXX Dynamicize this
-  elsif myos =~ /Linux/
+  elsif hostos =~ /Linux/
     ovftool_default = '/usr/bin/ovftool'
   else
     abort("Not tested for this platform: #{myos}")
@@ -380,6 +381,8 @@ task :createvmx, [:vmos] => [:createovf] do |t,args|
   cputs "Converting OVF to VMX..."
   FileUtils.rm_rf("#{VMWAREDIR}/#{$settings[:vmname]}-vmware") if File.directory?("#{VMWAREDIR}/#{$settings[:vmname]}-vmware")
   FileUtils.mkdir_p("#{VMWAREDIR}/#{$settings[:vmname]}-vmware")
+  
+  # TODO: I think this path changes between Mac and linux. Verify and fix the logic
   system("'#{ovftool_default}' --lax --compress=9 --targetType=VMX '#{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}.ovf' '#{VMWAREDIR}/#{$settings[:vmname]}-vmware'")
 
   cputs 'Changing virtualhw.version = "9" to "8"'
@@ -411,15 +414,22 @@ end
 
 desc "Zip up the VMs (unimplemented)"
 task :packagevm, [:vmos] do |t,args|
+  if hostos == 'Darwin'
+    md5cmd='md5'
+  elsif hostos == 'Linux'
+    md5cmd='md5sum'
+  else
+    abort("FIXME: what is the md5 command on #{hostos}?")
+  end
   args.with_defaults(:vmos => $settings[:vmos])
   prompt_vmos(args.vmos)
-
+  
   system("zip -rj '#{CACHEDIR}/#{$settings[:vmname]}-ovf.zip' '#{OVFDIR}/#{$settings[:vmname]}-ovf'")
   system("zip -rj '#{CACHEDIR}/#{$settings[:vmname]}-vmware.zip' '#{VMWAREDIR}/#{$settings[:vmname]}-vmware'")
   system("zip -rj '#{CACHEDIR}/#{$settings[:vmname]}-vbox.zip' '#{VBOXDIR}/#{$settings[:vmname]}-vbox'")
-  system("md5 '#{CACHEDIR}/#{$settings[:vmname]}-ovf.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-ovf.zip.md5'")
-  system("md5 '#{CACHEDIR}/#{$settings[:vmname]}-vmware.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-vmware.zip.md5'")
-  system("md5 '#{CACHEDIR}/#{$settings[:vmname]}-vbox.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-vbox.zip.md5'")
+  system("#{md5cmd} '#{CACHEDIR}/#{$settings[:vmname]}-ovf.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-ovf.zip.md5'")
+  system("#{md5cmd} '#{CACHEDIR}/#{$settings[:vmname]}-vmware.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-vmware.zip.md5'")
+  system("#{md5cmd} '#{CACHEDIR}/#{$settings[:vmname]}-vbox.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-vbox.zip.md5'")
   # zip & md5 vagrant
 end
 
