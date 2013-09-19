@@ -414,9 +414,9 @@ end
 
 desc "Zip up the VMs (unimplemented)"
 task :packagevm, [:vmos] do |t,args|
-  if hostos == 'Darwin'
+  if hostos =~ /Darwin/
     md5cmd='md5'
-  elsif hostos == 'Linux'
+  elsif hostos =~ /Linux/
     md5cmd='md5sum'
   else
     abort("FIXME: what is the md5 command on #{hostos}?")
