@@ -446,6 +446,8 @@ task :clean, [:del] do |t,args|
   end
   cputs "Removing #{BUILDDIR}"
   FileUtils.rm_rf(BUILDDIR) if File.directory?(BUILDDIR)
+  cputs "Removing cloned repos"
+  FileUtils.rm_rf(CACHEDIR+"/*.git")
   if $settings[:del] == 'yes'
     cputs "Removing packaged VMs"
     FileUtils.rm Dir.glob("#{CACHEDIR}/*-pe-#{PEVERSION}*.zip*")
