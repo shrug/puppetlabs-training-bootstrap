@@ -436,7 +436,8 @@ end
 desc "Unmount the ISO and remove kickstart files and repos"
 task :clean, [:del] do |t,args|
   args.with_defaults(:del => $settings[:del])
-  prompt_del(args.del)
+  $settings[:del] = 'yes'
+  #prompt_del(args.del)
 
   cputs "Destroying vms"
   ['Debian','Centos'].each do |os|
