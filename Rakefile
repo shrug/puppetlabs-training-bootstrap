@@ -31,6 +31,7 @@ VBOXDIR = "#{BUILDDIR}/vbox"
 
 PESTATUS = ENV['PESTATUS'] || PESTATUS = 'latest'
 PEVERSION = ENV['PEVERSION'] || PEVERSION = '3.1.0'
+pe_tarball=''
 
 ptbuser = ENV['ptbuser'] || ptbuser = 'shrug'
 $settings = Hash.new
@@ -47,7 +48,7 @@ task :init do
   system("gpg --keyserver pgp.mit.edu --recv-key 4BD6EC30")
   abort("Could not import public key: #{$?}") if $? != 0
 
-  get_pe(PESTATUS,PEVERSION)
+  pe_tarball=get_pe(PESTATUS,PEVERSION)
 
   cputs "Cloning puppet..."
   gitclone 'git://github.com/puppetlabs/puppet.git', "#{CACHEDIR}/puppet.git", 'master'
@@ -138,7 +139,7 @@ task :createiso, [:vmos,:vmtype] do |t,args|
     else
       $settings[:hostname] = "learn.localdomain"
     end
-    $settings[:pe_tarball] = "puppet-enterprise-#{PEVERSION}#{$settings[:pe_install_suffix]}.tar.gz"
+    $settings[:pe_tarball] = pe_tarball
     # No variables
     build_file('isolinux.cfg')
     #template_path = "#{BASEDIR}/#{$settings[:vmos]}/#{filename}.erb"
@@ -166,7 +167,7 @@ task :createiso, [:vmos,:vmtype] do |t,args|
       $settings[:hostname] = "learn.localdomain"
     end
 
-    $settings[:pe_tarball] = "puppet-enterprise-#{PEVERSION}#{$settings[:pe_install_suffix]}.tar.gz"
+    $settings[:pe_tarball] = pe_tarball
     # No variables
     build_file('isolinux.cfg')
     # Uses hostname, pe_install_suffix

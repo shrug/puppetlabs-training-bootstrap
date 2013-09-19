@@ -28,7 +28,7 @@ def get_pe(status, version)
       download "#{url_prefix}/#{pe_tarball}.asc", "#{CACHEDIR}/#{pe_tarball}.asc"
     end
   end
-  
+  return pe_tarball
   
 end
 
