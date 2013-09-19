@@ -38,7 +38,7 @@ else
   abort("Unknown status #{PESTATUS}: use \"release\" or \"test\"")
 end
   PE_RELEASE_URL = "#{PE_RELEASE_URL_PREFIX}/#{PEVERSION}"
-ptbuser = ENV['ptbuser'] || ptbuser = 'puppetlabs'
+ptbuser = ENV['ptbuser'] || ptbuser = 'shrug'
 $settings = Hash.new
 hostos=''
 
@@ -113,7 +113,7 @@ task :init do
   if File.exist?("#{ptbrepo_destination}/HEAD")
     ptbbranch_default = File.read("#{ptbrepo_destination}/HEAD").match(/.*refs\/heads\/(\S+)/)[1]
   else
-    ptbbranch_default = 'master'
+    ptbbranch_default = 'feature/re-301'
   end
   ptbbranch = ENV['ptbbranch_default'] || ptbbranch = ptbbranch_default
   cputs "Cloning ptb..."
