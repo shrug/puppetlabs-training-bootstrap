@@ -32,7 +32,6 @@ class learning::install {
     ensure      => file,
     source      => 'puppet:///modules/learning/console_login.sh',
     mode        => '0755',
-    timeout     => '3600'
   }
 
   # Put examples in place -- we should have some way to automatically get the
@@ -42,7 +41,6 @@ class learning::install {
     ensure   => directory,
     source   => "puppet:///modules/${module_name}/examples",
     recurse  => true,
-    timeout  => '3600'
   }
 
 }
