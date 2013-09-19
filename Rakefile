@@ -5,6 +5,8 @@ require 'net/https'
 require 'rubygems'
 require 'gpgme'
 
+import 'utils.rake'
+
 STDOUT.sync = true
 BASEDIR = File.dirname(__FILE__)
 if ENV['USER'] == 'jenkins' || ENV['USER'] == 'root'
@@ -27,17 +29,9 @@ VBOXDIR = "#{BUILDDIR}/vbox"
 # Edit the PEVERSION to something like:
 # PEVERSION = '3.0.1-rc0-58-g9275a0f'
 
-PESTATUS = ENV['PESTATUS'] || PESTATUS = 'release'
-PEVERSION = ENV['PEVERSION'] || PEVERSION = '3.0.1'
-pevers = PEVERSION.split('.')
-if PESTATUS == 'release'
-  PE_RELEASE_URL_PREFIX = "https://s3.amazonaws.com/pe-builds/released"
-elsif PESTATUS == 'test'
-  PE_RELEASE_URL_PREFIX = "http://neptune.delivery.puppetlabs.net/#{pevers[0]}.#{pevers[1]}/ci-ready/"
-else
-  abort("Unknown status #{PESTATUS}: use \"release\" or \"test\"")
-end
-  PE_RELEASE_URL = "#{PE_RELEASE_URL_PREFIX}/#{PEVERSION}"
+PESTATUS = ENV['PESTATUS'] || PESTATUS = 'latest'
+PEVERSION = ENV['PEVERSION'] || PEVERSION = '3.1.0'
+
 ptbuser = ENV['ptbuser'] || ptbuser = 'shrug'
 $settings = Hash.new
 hostos=''
@@ -53,37 +47,7 @@ task :init do
   system("gpg --keyserver pgp.mit.edu --recv-key 4BD6EC30")
   abort("Could not import public key: #{$?}") if $? != 0
 
-  ['Debian','Centos'].each do |vmos|
-    case vmos
-    when 'Debian'
-      pe_install_suffix = '-debian-6-i386'
-    when 'Centos'
-      pe_install_suffix = '-el-6-i386'
-    end
-    # This is horrible, fix this
-    if PESTATUS == 'release'
-      pe_tarball = "puppet-enterprise-#{PEVERSION}#{pe_install_suffix}.tar.gz"
-      installer = "#{CACHEDIR}/#{pe_tarball}"
-      unless File.exist?(installer)
-        cputs "Downloading #{vmos} PE tarball #{PEVERSION}..."
-        download "#{PE_RELEASE_URL}/#{pe_tarball}", installer
-      end
-      unless File.exist?("#{installer}.asc")
-        cputs "Downloading #{vmos} PE signature asc file for #{PEVERSION}..."
-        download "#{PE_RELEASE_URL}/#{pe_tarball}.asc", "#{CACHEDIR}/#{pe_tarball}.asc"
-      end
-      cputs "Verifying signature"
-      system("gpg --verify --always-trust #{installer}.asc #{installer}")
-      abort("Signature verify returned #{$?}") if $? != 0
-    elsif PESTATUS == 'test'
-      pe_tarball = "puppet-enterprise-#{PEVERSION}#{pe_install_suffix}.tar"
-      installer = "#{CACHEDIR}/#{pe_tarball}"
-      unless File.exist?(installer)
-        cputs "Downloading #{vmos} PE tarball #{PEVERSION}..."
-        download "#{PE_RELEASE_URL}/#{pe_tarball}", installer
-      end
-    end
-  end
+  get_pe(PESTATUS,PEVERSION)
 
   cputs "Cloning puppet..."
   gitclone 'git://github.com/puppetlabs/puppet.git', "#{CACHEDIR}/puppet.git", 'master'
@@ -454,116 +418,4 @@ task :clean, [:del] do |t,args|
   end
 end
 
-def download(url,path)
-  u = URI.parse(url)
-  net = Net::HTTP.new(u.host, u.port)
-  case u.scheme
-  when "http"
-    net.use_ssl = false
-  when "https"
-    net.use_ssl = true
-    net.verify_mode = OpenSSL::SSL::VERIFY_NONE
-  else
-    raise "Link #{url} is not HTTP(S)"
-  end
-  net.start do |http|
-    File.open(path,"wb") do |f|
-      begin
-        http.request_get(u.path) do |resp|
-          resp.read_body do |segment|
-            f.write(segment)
-          end
-        end
-      rescue => e
-        cputs "Error: #{e.message}"
-      end
-    end
-  end
-end
-
-def gitclone(source,destination,branch)
-  if File.directory?(destination) then
-    system("cd #{destination} && (git fetch origin '+refs/heads/*:refs/heads/*' && git update-server-info && git symbolic-ref HEAD refs/heads/#{branch})") or raise(Error, "Cannot pull ${source}")
-  else
-    system("git clone --bare #{source} #{destination} && cd #{destination} && git update-server-info && git symbolic-ref HEAD refs/heads/#{branch}") or raise(Error, "Cannot clone #{source}")
-  end
-end
-
-def prompt_del(del=nil)
-  del = del || ENV['del']
-  loop do
-    cprint "Do you want to delete the packaged VMs in #{CACHEDIR}? [no]: "
-    del = STDIN.gets.chomp.downcase
-    del = 'no' if del.empty?
-    puts del
-    if del !~ /(y|n|yes|no)/
-      cputs "Please answer with yes or no (y/n)."
-    else
-      break #loop
-    end
-  end unless del
-  if del =~ /(y|yes)/
-    $settings[:del] = 'yes'
-  else
-    $settings[:del] = 'no'
-  end
-end
-
-def prompt_vmos(osname=nil)
-  osname = ENV['vmos'] || osname= 'Centos'
-  $settings[:vmos] = osname
-end
-
-def prompt_vmtype(type=nil)
-  type = ENV['vmtype'] || type = 'learning'
-    if type !~ /(training|learning)/
-      abort("Incorrect/unknown type of VM: #{type}")
-    end
-  $settings[:vmtype] = type
-end
-
-def build_file(filename)
-  template_path = "#{BASEDIR}/files/#{$settings[:vmos]}/#{filename}.erb"
-  target_dir = "#{BUILDDIR}/#{$settings[:vmos]}"
-  target_path = "#{target_dir}/#{filename}"
-  FileUtils.mkdir(target_dir) unless File.directory?(target_dir)
-  if File.file?(template_path)
-    cputs "Building #{target_path}..."
-    File.open(target_path,'w') do |f|
-      template_content = ERB.new(File.read(template_path)).result
-      f.write(template_content)
-    end
-  else
-    cputs "No source template found: #{template_path}"
-  end
-end
-
-def map_iso(indev,outdev,paths)
-  maps = paths.collect do |frompath,topath|
-    "-map '#{frompath}' '#{topath}'"
-  end.join(' ')
-  system("xorriso -osirrox on -boot_image any patch -indev #{indev} -outdev #{outdev} #{maps}")
-end
-
-def verify_download(download, signature)
-  crypto = GPGME::Crypto.new
-  sign = GPGME::Data.new(File.open(signature))
-  file_to_check = GPGME::Data.new(File.open(download))
-  crypto.verify(sign, :signed_text => file_to_check, :always_trust => true) do |signature|
-   puts "Valid!" if signature.valid?
-  end
-end
-
-def cputs(string)
-  puts "\033[1m#{string}\033[0m"
-end
-
-def cprint(string)
-  print "\033[1m#{string}\033[0m"
-end
-
-def get_pe(status, version)
-  
-  
-end
 # vim: set sw=2 sts=2 et tw=80 :
