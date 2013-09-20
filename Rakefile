@@ -395,9 +395,9 @@ task :packagevm, [:vmos] do |t,args|
   system("zip -rj '#{CACHEDIR}/vms/#{$settings[:vmname]}-ovf.zip' '#{OVFDIR}/#{$settings[:vmname]}-ovf'")
   system("zip -rj '#{CACHEDIR}/vms/#{$settings[:vmname]}-vmware.zip' '#{VMWAREDIR}/#{$settings[:vmname]}-vmware'")
   system("zip -rj '#{CACHEDIR}/vms/#{$settings[:vmname]}-vbox.zip' '#{VBOXDIR}/#{$settings[:vmname]}-vbox'")
-  system("#{md5cmd} '#{CACHEDIR}/vms/#{$settings[:vmname]}-ovf.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-ovf.zip.md5'")
-  system("#{md5cmd} '#{CACHEDIR}/vms/#{$settings[:vmname]}-vmware.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-vmware.zip.md5'")
-  system("#{md5cmd} '#{CACHEDIR}/vms/#{$settings[:vmname]}-vbox.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-vbox.zip.md5'")
+  system("#{md5cmd} '#{CACHEDIR}/vms/#{$settings[:vmname]}-ovf.zip' > '#{CACHEDIR}/vms/#{$settings[:vmname]}-ovf.zip.md5'")
+  system("#{md5cmd} '#{CACHEDIR}/vms/#{$settings[:vmname]}-vmware.zip' > '#{CACHEDIR}/vms/#{$settings[:vmname]}-vmware.zip.md5'")
+  system("#{md5cmd} '#{CACHEDIR}/vms/#{$settings[:vmname]}-vbox.zip' > '#{CACHEDIR}/vms/#{$settings[:vmname]}-vbox.zip.md5'")
   # zip & md5 vagrant
 end
 
