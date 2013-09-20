@@ -6,6 +6,7 @@ require 'rubygems'
 require 'gpgme'
 
 import 'utils.rake'
+Dir.glob('tasks/*.rake').each { |r| import r }
 
 STDOUT.sync = true
 BASEDIR = File.dirname(__FILE__)
@@ -377,7 +378,7 @@ task :vagrantize, [:vmos] do |t,args|
   FileUtils.ln_sf("#{VAGRANTDIR}/#{$settings[:vmname]}.box", "#{VAGRANTDIR}/#{$settings[:vmos].downcase}-latest.box")
 end
 
-desc "Zip up the VMs (unimplemented)"
+desc "Zip up the VMs"
 task :packagevm, [:vmos] do |t,args|
   if hostos =~ /Darwin/
     md5cmd='md5'
@@ -398,27 +399,11 @@ task :packagevm, [:vmos] do |t,args|
   # zip & md5 vagrant
 end
 
-desc "Unmount the ISO and remove kickstart files and repos"
-task :clean, [:del] do |t,args|
-  args.with_defaults(:del => $settings[:del])
-  $settings[:del] = 'yes'
-  #prompt_del(args.del)
 
-  cputs "Destroying vms"
-  ['Debian','Centos'].each do |os|
-    Rake::Task[:destroyvm].invoke(os)
-    Rake::Task[:destroyvm].reenable
-  end
-  cputs "Removing #{BUILDDIR}"
-  FileUtils.rm_rf(BUILDDIR) if File.directory?(BUILDDIR)
-  cputs "Removing cloned repos"
-  FileUtils.rm_rf(CACHEDIR+"/*.git")
-  cputs "Removing tarballs"
-  FileUtils.rm_rf(CACHEDIR+"/*.tar*")
-  if $settings[:del] == 'yes'
-    cputs "Removing packaged VMs"
-    FileUtils.rm Dir.glob("#{CACHEDIR}/*-pe-#{PEVERSION}*.zip*")
-  end
-end
+
+
+
+
+
 
 # vim: set sw=2 sts=2 et tw=80 :
