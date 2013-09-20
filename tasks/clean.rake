@@ -9,6 +9,7 @@ task :clean, [:del] do |t,args|
     Rake::Task[:destroyvm].invoke(os)
     Rake::Task[:destroyvm].reenable
   end
+  cputs "CACHEDIR is #{CACHEDIR}"
   cputs "Removing #{BUILDDIR}"
   FileUtils.rm_rf(BUILDDIR) if File.directory?(BUILDDIR)
   cputs "Removing cloned repos"
