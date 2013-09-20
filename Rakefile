@@ -309,6 +309,7 @@ task :everything, [:vmos] do |t,args|
   Rake::Task[:createvbox].invoke($settings[:vmos])
   Rake::Task[:vagrantize].invoke($settings[:vmos])
   Rake::Task[:packagevm].invoke($settings[:vmos])
+  Rake::Task[:shipvm].invoke
 end
 
 desc "Force-stop the VM"
