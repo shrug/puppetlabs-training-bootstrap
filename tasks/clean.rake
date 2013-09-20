@@ -13,11 +13,11 @@ task :clean, [:del] do |t,args|
   cputs "Removing #{BUILDDIR}"
   FileUtils.rm_rf(BUILDDIR) if File.directory?(BUILDDIR)
   cputs "Removing cloned repos"
-  FileUtils.rm_rf(CACHEDIR+"/*.git")
+  FileUtils.rm_rf(Dir.glob(CACHEDIR+"/*.git"))
   cputs "Removing tarballs"
-  FileUtils.rm_rf(CACHEDIR+"/*.tar*")
+  FileUtils.rm_rf(Dir.glob(CACHEDIR+"/*.tar*"))
   if $settings[:del] == 'yes'
     cputs "Removing packaged VMs"
-    FileUtils.rm_rf(CACHEDIR+"/vms/*.zip*")
+    FileUtils.rm_rf(Dir.glob(CACHEDIR+"/vms/*.zip*"))
   end
 end
