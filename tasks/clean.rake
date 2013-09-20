@@ -17,6 +17,6 @@ task :clean, [:del] do |t,args|
   FileUtils.rm_rf(CACHEDIR+"/*.tar*")
   if $settings[:del] == 'yes'
     cputs "Removing packaged VMs"
-    FileUtils.rm Dir.glob("#{CACHEDIR}/*-pe-#{PEVERSION}*.zip*")
+    FileUtils.rm Dir.glob("#{CACHEDIR}/vms/*-pe-#{PEVERSION}*.zip*")
   end
 end

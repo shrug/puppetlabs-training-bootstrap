@@ -84,6 +84,7 @@ task :init do
   ptbbranch = ENV['ptbbranch_default'] || ptbbranch = ptbbranch_default
   cputs "Cloning ptb..."
   gitclone ptbrepo, ptbrepo_destination, ptbbranch
+  FileUtils.cp("#{ptbrepo_destination}/tools/.s3cfg #{CACHEDIR}/")
 end
 
 desc "Destroy VirtualBox instance"
@@ -389,13 +390,13 @@ task :packagevm, [:vmos] do |t,args|
   end
   args.with_defaults(:vmos => $settings[:vmos])
   prompt_vmos(args.vmos)
-  
-  system("zip -rj '#{CACHEDIR}/#{$settings[:vmname]}-ovf.zip' '#{OVFDIR}/#{$settings[:vmname]}-ovf'")
-  system("zip -rj '#{CACHEDIR}/#{$settings[:vmname]}-vmware.zip' '#{VMWAREDIR}/#{$settings[:vmname]}-vmware'")
-  system("zip -rj '#{CACHEDIR}/#{$settings[:vmname]}-vbox.zip' '#{VBOXDIR}/#{$settings[:vmname]}-vbox'")
-  system("#{md5cmd} '#{CACHEDIR}/#{$settings[:vmname]}-ovf.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-ovf.zip.md5'")
-  system("#{md5cmd} '#{CACHEDIR}/#{$settings[:vmname]}-vmware.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-vmware.zip.md5'")
-  system("#{md5cmd} '#{CACHEDIR}/#{$settings[:vmname]}-vbox.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-vbox.zip.md5'")
+  FileUtils.mkdir_p("#{CACHEDIR}/vms")
+  system("zip -rj '#{CACHEDIR}/vms/#{$settings[:vmname]}-ovf.zip' '#{OVFDIR}/#{$settings[:vmname]}-ovf'")
+  system("zip -rj '#{CACHEDIR}/vms/#{$settings[:vmname]}-vmware.zip' '#{VMWAREDIR}/#{$settings[:vmname]}-vmware'")
+  system("zip -rj '#{CACHEDIR}/vms/#{$settings[:vmname]}-vbox.zip' '#{VBOXDIR}/#{$settings[:vmname]}-vbox'")
+  system("#{md5cmd} '#{CACHEDIR}/vms/#{$settings[:vmname]}-ovf.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-ovf.zip.md5'")
+  system("#{md5cmd} '#{CACHEDIR}/vms/#{$settings[:vmname]}-vmware.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-vmware.zip.md5'")
+  system("#{md5cmd} '#{CACHEDIR}/vms/#{$settings[:vmname]}-vbox.zip' > '#{CACHEDIR}/#{$settings[:vmname]}-vbox.zip.md5'")
   # zip & md5 vagrant
 end
 
