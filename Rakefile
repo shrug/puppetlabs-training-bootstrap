@@ -84,7 +84,7 @@ task :init do
   ptbbranch = ENV['ptbbranch_default'] || ptbbranch = ptbbranch_default
   cputs "Cloning ptb..."
   gitclone ptbrepo, ptbrepo_destination, ptbbranch
-  FileUtils.cp("#{ptbrepo_destination}/tools/.s3cfg #{CACHEDIR}/")
+  FileUtils.cp("#{ptbrepo_destination}/tools/.s3cfg", "#{CACHEDIR}/")
 end
 
 desc "Destroy VirtualBox instance"
