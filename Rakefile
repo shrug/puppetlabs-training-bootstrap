@@ -391,7 +391,7 @@ task :packagevm, [:vmos] do |t,args|
   end
   args.with_defaults(:vmos => $settings[:vmos])
   prompt_vmos(args.vmos)
-  unless file.exists?("#{CACHEDIR}/vms")
+  unless File.exists?("#{CACHEDIR}/vms")
     FileUtils.mkdir_p("#{CACHEDIR}/vms")
   end
   system("zip -rj '#{CACHEDIR}/vms/#{$settings[:vmname]}-ovf.zip' '#{OVFDIR}/#{$settings[:vmname]}-ovf'")
