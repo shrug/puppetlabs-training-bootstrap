@@ -192,6 +192,7 @@ task :createiso, [:vmos,:vmtype] do |t,args|
       File.open("#{CACHEDIR}/builder.ip", 'w') do |file| 
         file.write(Facter.value('ipaddress').chomp)
       end
+    end
         
     # Define ISO file targets
     files = {
