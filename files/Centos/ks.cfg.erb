@@ -56,6 +56,7 @@ ntp
 curl
 tar
 ruby
+socat
 
 %post --erroronfail
 exec < /dev/tty3 > /dev/tty3
@@ -76,7 +77,12 @@ hostname <%= $settings[:hostname] %>
 
 sed -i 's/127\.0\.0\.1.*/\0 <%= $settings[:hostname] %> <%= $settings[:hostname].split('.')[0] %>/' /etc/hosts
 cp /mnt/puppet/<%= $settings[:pe_tarball] %> /root/
+<% if File.extname($settings[:pe_tarball]) == ".gz" %>
 tar zxf /root/<%= $settings[:pe_tarball] %>
+<% elsif File.extname($settings[:pe_tarball]) == ".tar" %>
+tar xf /root/<%= $settings[:pe_tarball] %>
+<% else abort("Not sure what type of file #{$settings[:pe_tarball]} is") %>
+<% end %>
 ln -s /root/puppet-enterprise-<%= PEVERSION + $settings[:pe_install_suffix] %> /root/puppet-enterprise
 
 # put verification script links in personal bin directory
@@ -105,5 +111,5 @@ rm -rf /etc/udev/rules.d/70-persistent-net.rules
 sed -i -e '/^HWADDR.*/d' /etc/sysconfig/network-scripts/ifcfg-eth0
 #/bin/sh
 #echo 'Hello, World!'
-) 2>&1 | /usr/bin/tee /root/post.log
+) 2>&1 | /usr/bin/tee /root/post.log | socat - tcp:connect:$(cat /mnt/puppet/builder.ip ):5151
 chvt 1

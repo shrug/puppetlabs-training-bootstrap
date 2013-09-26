@@ -20,4 +20,6 @@ task :clean, [:del] do |t,args|
     cputs "Removing packaged VMs"
     FileUtils.rm_rf(Dir.glob(CACHEDIR+"/vms/*.zip*"))
   end
+  cputs "Archiving post.log"
+  Fileutils.mv(CACHEDIR+"/post.log", CACHEDIR+"/post.log_lastrun")
 end

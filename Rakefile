@@ -4,6 +4,8 @@ require 'net/http'
 require 'net/https'
 require 'rubygems'
 require 'gpgme'
+require 'YAML'
+require 'facter'
 
 import 'utils.rake'
 Dir.glob('tasks/*.rake').each { |r| import r }
@@ -186,13 +188,20 @@ task :createiso, [:vmos,:vmtype] do |t,args|
       #download "http://mirrors.cat.pdx.edu/epel/5/i386/epel-release-5-4.noarch.rpm", "#{CACHEDIR}/epel-release.rpm"
     download "http://yum-enterprise.puppetlabs.com/el/6/extras/i386/puppetlabs-enterprise-release-extras-6-2.noarch.rpm", "#{CACHEDIR}/puppetlabs-enterprise-release-extras.rpm"
     end
-
+    unless File.exist?("#{CACHEDIR}/builder.ip")
+      cputs "Generating builder.ip"
+      builderip = Facter.value('ipaddress')
+      File.open("#{CACHEDIR}/builder.ip", 'w') { |file| 
+        file.write(Facter.value('ipaddress').chomp)
+      }
+        
     # Define ISO file targets
     files = {
       "#{BUILDDIR}/Centos/isolinux.cfg"               => '/isolinux/isolinux.cfg',
       "#{BUILDDIR}/Centos/ks.cfg"                     => '/puppet/ks.cfg',
       "#{CACHEDIR}/epel-release.rpm"                  => '/puppet/epel-release.rpm',
       "#{CACHEDIR}/puppetlabs-enterprise-release-extras.rpm"  => '/puppet/puppetlabs-enterprise-release-extras.rpm',
+      "#{CACHEDIR}/builder.ip"                        => '/puppet/builder.ip',
       "#{CACHEDIR}/puppet.git"                        => '/puppet/puppet.git',
       "#{CACHEDIR}/facter.git"                        => '/puppet/facter.git',
       "#{CACHEDIR}/hiera.git"                        => '/puppet/hiera.git',
@@ -283,7 +292,14 @@ task :startvm, [:vmos] do |t,args|
   prompt_vmos(args.vmos)
 
   cputs "Starting #{$settings[:vmname]}"
+  system("socat tcp-listen:5151 OPEN:${CACHEDIR}/post.log,creat,append &")
   system("VBoxHeadless --startvm '#{$settings[:vmname]}'")
+end
+
+desc "Check the result of the install"
+task :checklog do
+  File.open("#{CACHEDIR}/post.log") do |log|
+    abort(result) if result=log.grep("Error:")
 end
 
 desc "Reload the VM"
@@ -303,6 +319,7 @@ task :everything, [:vmos] do |t,args|
   Rake::Task[:createvm].invoke($settings[:vmos])
   Rake::Task[:mountiso].invoke($settings[:vmos])
   Rake::Task[:startvm].invoke($settings[:vmos])
+  Rake::Task[:checklog].invoke
   Rake::Task[:unmountiso].invoke($settings[:vmos])
   Rake::Task[:createovf].invoke($settings[:vmos])
   Rake::Task[:createvmx].invoke($settings[:vmos])
