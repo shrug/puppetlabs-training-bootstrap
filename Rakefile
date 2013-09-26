@@ -4,7 +4,6 @@ require 'net/http'
 require 'net/https'
 require 'rubygems'
 require 'gpgme'
-require 'YAML'
 require 'facter'
 
 import 'utils.rake'
@@ -190,10 +189,9 @@ task :createiso, [:vmos,:vmtype] do |t,args|
     end
     unless File.exist?("#{CACHEDIR}/builder.ip")
       cputs "Generating builder.ip"
-      builderip = Facter.value('ipaddress')
-      File.open("#{CACHEDIR}/builder.ip", 'w') { |file| 
+      File.open("#{CACHEDIR}/builder.ip", 'w') do |file| 
         file.write(Facter.value('ipaddress').chomp)
-      }
+      end
         
     # Define ISO file targets
     files = {
@@ -299,7 +297,7 @@ end
 desc "Check the result of the install"
 task :checklog do
   File.open("#{CACHEDIR}/post.log") do |log|
-    abort(result) if result=log.grep("Error:")
+    abort(result) if result=log.grep(/Error:/)
   end
 end
 
