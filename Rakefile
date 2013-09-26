@@ -292,9 +292,9 @@ task :startvm, [:vmos] do |t,args|
   prompt_vmos(args.vmos)
 
   cputs "Starting #{$settings[:vmname]}"
-  system("socat tcp-listen:5151 OPEN:#{CACHEDIR}/post.log,creat,append &")
-  socatpid = $?.pid
-  cputs "socat PID is #{socatpid}"
+  system("nc -l 5151 > #{CACHEDIR}/post.log &")
+  netcatpid = $?.pid
+  cputs "netcat PID is #{socatpid}"
   system("VBoxHeadless --startvm '#{$settings[:vmname]}'")
 end
 
