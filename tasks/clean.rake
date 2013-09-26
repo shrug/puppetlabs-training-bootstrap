@@ -21,5 +21,5 @@ task :clean, [:del] do |t,args|
     FileUtils.rm_rf(Dir.glob(CACHEDIR+"/vms/*.zip*"))
   end
   cputs "Archiving post.log"
-  Fileutils.mv(CACHEDIR+"/post.log", CACHEDIR+"/post.log_lastrun")
+  FileUtils.mv(CACHEDIR+"/post.log", CACHEDIR+"/post.log_lastrun")
 end
