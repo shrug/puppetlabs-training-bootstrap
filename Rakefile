@@ -300,6 +300,7 @@ desc "Check the result of the install"
 task :checklog do
   File.open("#{CACHEDIR}/post.log") do |log|
     abort(result) if result=log.grep("Error:")
+  end
 end
 
 desc "Reload the VM"
