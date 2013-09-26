@@ -56,7 +56,7 @@ ntp
 curl
 tar
 ruby
-nc
+nmap-ncat
 
 %post --erroronfail
 exec < /dev/tty3 > /dev/tty3
@@ -111,5 +111,5 @@ rm -rf /etc/udev/rules.d/70-persistent-net.rules
 sed -i -e '/^HWADDR.*/d' /etc/sysconfig/network-scripts/ifcfg-eth0
 #/bin/sh
 #echo 'Hello, World!'
-) 2>&1 | /usr/bin/tee /root/post.log | socat - tcp:connect:$(cat /mnt/puppet/builder.ip ):5151
+) 2>&1 | /usr/bin/tee /root/post.log | /bin/nc -v $(cat /mnt/puppet/builder.ip ) 5151
 chvt 1
