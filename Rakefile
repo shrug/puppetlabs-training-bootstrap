@@ -38,6 +38,7 @@ pe_tarball=''
 ptbuser = ENV['ptbuser'] || ptbuser = 'shrug'
 $settings = Hash.new
 hostos=''
+socatpid=''
 
 desc "Build and populate data directory"
 task :init do
@@ -292,6 +293,7 @@ task :startvm, [:vmos] do |t,args|
 
   cputs "Starting #{$settings[:vmname]}"
   system("socat tcp-listen:5151 OPEN:#{CACHEDIR}/post.log,creat,append &")
+  socatpid = $?.pid
   system("VBoxHeadless --startvm '#{$settings[:vmname]}'")
 end
 

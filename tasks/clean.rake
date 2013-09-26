@@ -24,4 +24,10 @@ task :clean, [:del] do |t,args|
     cputs "Archiving post.log"
     FileUtils.mv CACHEDIR+"/post.log", CACHEDIR+"/post.log_lastrun", :force => true
   end
+  begin
+    Process.getpgid( socatpid )
+    Process.kill("KILL", socatpid)
+  rescue Errno::ESRCH
+    cputs "socat not running"
+  end 
 end
