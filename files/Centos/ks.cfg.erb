@@ -76,12 +76,11 @@ sed -i 's/HOSTNAME.*/HOSTNAME=<%= $settings[:hostname] %>/' /etc/sysconfig/netwo
 hostname <%= $settings[:hostname] %>
 
 sed -i 's/127\.0\.0\.1.*/\0 <%= $settings[:hostname] %> <%= $settings[:hostname].split('.')[0] %>/' /etc/hosts
-ntpdate 0.centos.pool.ntp.org
 cp /mnt/puppet/<%= $settings[:pe_tarball] %> /root/
 <% if File.extname($settings[:pe_tarball]) == ".gz" %>
-tar zxf /root/<%= $settings[:pe_tarball] %>
+tar zmxf /root/<%= $settings[:pe_tarball] %>
 <% elsif File.extname($settings[:pe_tarball]) == ".tar" %>
-tar xf /root/<%= $settings[:pe_tarball] %>
+tar mxf /root/<%= $settings[:pe_tarball] %>
 <% else abort("Not sure what type of file #{$settings[:pe_tarball]} is") %>
 <% end %>
 ln -s /root/puppet-enterprise-<%= PEVERSION + $settings[:pe_install_suffix] %> /root/puppet-enterprise
