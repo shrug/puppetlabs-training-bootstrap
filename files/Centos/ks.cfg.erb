@@ -79,11 +79,11 @@ sed -i 's/127\.0\.0\.1.*/\0 <%= $settings[:hostname] %> <%= $settings[:hostname]
 cp /mnt/puppet/<%= $settings[:pe_tarball] %> /root/
 <% if File.extname($settings[:pe_tarball]) == ".gz" %>
 tar zmxf /root/<%= $settings[:pe_tarball] %>
-<% tname = File.basename($settings[:pe_tarball], File.extname($settings[:pe_tarball]))%>
-<% fname = File.basename(tname, File.extname(tname))%>
+<% tname = File.basename($settings[:pe_tarball], File.extname($settings[:pe_tarball])) %>
+<% fname = File.basename(tname, File.extname(tname)) %>
 <% elsif File.extname($settings[:pe_tarball]) == ".tar" %>
 tar mxf /root/<%= $settings[:pe_tarball] %>
-<% fname - File.basename($settings[:pe_tarball], File.extname($settings[:pe_tarball]))%>
+<% fname = File.basename($settings[:pe_tarball], File.extname($settings[:pe_tarball])) %>
 <% else abort("Not sure what type of file #{$settings[:pe_tarball]} is") %>
 <% end %>
 ln -s /root/puppet-enterprise-<%= fname %> /root/puppet-enterprise
