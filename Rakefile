@@ -38,7 +38,13 @@ pe_tarball=''
 ptbuser = ENV['ptbuser'] || ptbuser = 'shrug'
 $settings = Hash.new
 hostos=''
-socatpid=''
+netcatpid=''
+@real_pe_ver=''
+if status =~ /latest/
+  @real_pe_ver=get_latest_pe_version(version)
+else
+  @real_pe_ver=version
+end
 
 desc "Build and populate data directory"
 task :init do
@@ -244,9 +250,9 @@ task :createiso, [:vmos,:vmtype] do |t,args|
   iso_version = iso_default[/^.*-(\d+\.\d+\.?\d?)-.*\.iso$/,1]
   cputs "iso_version of #{iso_default} is #{iso_version}"
   if $settings[:vmtype] == 'training'
-    $settings[:vmname] = "#{$settings[:vmos]}-#{iso_version}-pe-#{PEVERSION}".downcase
+    $settings[:vmname] = "#{$settings[:vmos]}-#{iso_version}-pe-#{@real_pe_ver}".downcase
   else
-    $settings[:vmname] = "learn_puppet_#{$settings[:vmos]}-#{iso_version}-pe-#{PEVERSION}".downcase
+    $settings[:vmname] = "learn_puppet_#{$settings[:vmos]}-#{iso_version}-pe-#{@real_pe_ver}".downcase
   end
 end
 

@@ -1,30 +1,25 @@
 require 'net/http'
 
 def get_pe(status, version)
-  if status =~ /latest/
-    pever=get_latest_pe_version(version)
-  else
-    pever=version
-  end
   
   perelease = pever.split('.')
   if status =~ /latest/ || status =~ /test/
     url_prefix = "http://neptune.delivery.puppetlabs.net/#{perelease[0]}.#{perelease[1]}/ci-ready"
-    pe_tarball = "puppet-enterprise-#{pever}-el-6-i386.tar"
+    pe_tarball = "puppet-enterprise-#{@real_pe_ver}-el-6-i386.tar"
   elsif status =~ /release/
     url_prefix = "https://s3.amazonaws.com/pe-builds/released"
-    pe_tarball = "puppet-enterprise-#{pever}-el-6-i386.tar.gz"
+    pe_tarball = "puppet-enterprise-#{@real_pe_ver}-el-6-i386.tar.gz"
   else 
     abort("Status: #{status} not valid - use 'test', 'release' or 'latest'.")
   end
   installer = "#{CACHEDIR}/#{pe_tarball}"
   unless File.exist?(installer)
-    cputs "Downloading PE tarball #{PEVERSION}..."
+    cputs "Downloading PE tarball #{@real_pe_ver}..."
     download("#{url_prefix}/#{pe_tarball}", installer)
   end
   if status =~ /release/
     unless File.exist?("#{installer}.asc")
-      cputs "Downloading PE signature asc file for #{PEVERSION}..."
+      cputs "Downloading PE signature asc file for #{@real_pe_ver}..."
       download "#{url_prefix}/#{pe_tarball}.asc", "#{CACHEDIR}/#{pe_tarball}.asc"
     end
   end
