@@ -322,7 +322,7 @@ task :everything, [:vmos] do |t,args|
   Rake::Task[:createvm].invoke($settings[:vmos])
   Rake::Task[:mountiso].invoke($settings[:vmos])
   Rake::Task[:startvm].invoke($settings[:vmos])
-  Rake::Task[:checklog].invoke
+  # Rake::Task[:checklog].invoke
   Rake::Task[:unmountiso].invoke($settings[:vmos])
   Rake::Task[:createovf].invoke($settings[:vmos])
   Rake::Task[:createvmx].invoke($settings[:vmos])
