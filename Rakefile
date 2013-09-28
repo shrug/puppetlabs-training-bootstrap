@@ -40,10 +40,10 @@ $settings = Hash.new
 hostos=''
 netcatpid=''
 @real_pe_ver=''
-if status =~ /latest/
-  @real_pe_ver=get_latest_pe_version(version)
+if PESTATUS =~ /latest/
+  @real_pe_ver=get_latest_pe_version(PEVERSION)
 else
-  @real_pe_ver=version
+  @real_pe_ver=PEVERSION
 end
 
 desc "Build and populate data directory"
