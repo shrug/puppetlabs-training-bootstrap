@@ -2,7 +2,7 @@ require 'net/http'
 
 def get_pe(status, version)
   
-  perelease = pever.split('.')
+  perelease = @real_pe_ver.split('.')
   if status =~ /latest/ || status =~ /test/
     url_prefix = "http://neptune.delivery.puppetlabs.net/#{perelease[0]}.#{perelease[1]}/ci-ready"
     pe_tarball = "puppet-enterprise-#{@real_pe_ver}-el-6-i386.tar"
