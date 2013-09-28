@@ -20,10 +20,10 @@ task :clean, [:del] do |t,args|
     cputs "Removing packaged VMs"
     FileUtils.rm_rf(Dir.glob(CACHEDIR+"/vms/*.zip*"))
   end
-  if File.exist?(CACHEDIR+"/post.log")
-    cputs "Archiving post.log"
-    FileUtils.mv CACHEDIR+"/post.log", CACHEDIR+"/post.log_lastrun", :force => true
-  end
+  # if File.exist?(CACHEDIR+"/post.log")
+  #   cputs "Archiving post.log"
+  #   FileUtils.mv CACHEDIR+"/post.log", CACHEDIR+"/post.log_lastrun", :force => true
+  # end
   # if socatpid != nil
 #     begin
 #       Process.getpgid( socatpid )
