@@ -40,14 +40,18 @@ $settings = Hash.new
 hostos=''
 netcatpid=''
 @real_pe_ver=''
-if PESTATUS =~ /latest/
-  @real_pe_ver=get_latest_pe_version(PEVERSION)
-else
-  @real_pe_ver=PEVERSION
+
+desc "Get the latest PE version"
+task :get_pe_version do
+  if PESTATUS =~ /latest/
+    @real_pe_ver=get_latest_pe_version(PEVERSION)
+  else
+    @real_pe_ver=PEVERSION
+  end
 end
 
 desc "Build and populate data directory"
-task :init do
+task :init => [:get_pe_version] do
   [BUILDDIR, KSISODIR, CACHEDIR].each do |dir|
     unless File.directory?(dir)
       cputs "Making #{dir} for all kickstart data"
