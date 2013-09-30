@@ -56,7 +56,7 @@ def download(url,path)
           end
         end
       rescue => e
-        cputs "Error: #{e.message}"
+        abort("Error: #{e.message}")
       end
     end
   end
