@@ -517,27 +517,24 @@ task :publishvm do
   if $settings[:vmtype] == 'learning'
     # Should probably move most of this to a method
     require 'yaml'
-    # Make a local config file with vcenter/auth info.
-    # Put a script on the vmdk to set the dhcp/dns for our internal vmware network. Put an init script in the kickstart
-    # that will execute the above config, if it exists, and delete itself if it doesn't to keep the end-user
-    # vm pristine
-    sh "/bin/sudo /bin/vmware-mount #{VMWAREDIR}/#{$settings[:vmname]}-vmware/#{$settings[:vmname]}/#{$settings[:vmname]}-disk1.vmdk /mnt/vmdk"
-    sh "/bin/sudo /bin/cp files/dnsconfig.sh /mnt/vmdk"
-    if File.exist?("/mnt/vmdk/post.log")
-      sh "/bin/sudo /bin/cp /mnt/vmdk/post.log ."
-    end
-    sh "/bin/sudo /bin/vmware-mount -d /mnt/vmdk"
-    # Set the MAC address to avoid issues with loising the DNS record. These overwrit each other so there should never be a conflict.
-    # This should probably be parameterized at some point, but the host name is fixed due to the certs.
-    cputs "Setting MAC address"
-    content = File.read(@vmxpath)
-    content = content.gsub(/^ethernet0.addressType = "generated"/, "ethernet0.addressType = \"static\"\nethernet0.address = \"00:50:56:9B:E8:3A\"")
-    File.open(@vmxpath, 'w') { |f| f.puts content }
+    require 'rbvmomi'
     # Manually place a file with the VMware credentials in #{CACHEDIR}
     vcenter_settings = YAML::load(File.open("#{CACHEDIR}/.vmwarecfg.yml"))
     # Do the thing here
     cputs "Publishing to vSphere"
-    sh "/usr/bin/ovftool --noSSLVerify --network='delivery.puppetlabs.net' --datastore='instance1' -o --powerOffTarget --powerOn -n=learn #{VMWAREDIR}/#{$settings[:vmname]}-vmware/#{$settings[:vmname]}/#{$settings[:vmname]}.vmx vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/host/delivery"
+    sh "/usr/bin/ovftool --noSSLVerify --network='delivery.puppetlabs.net' --datastore='instance1' -o --powerOffTarget -n=learn #{VMWAREDIR}/#{$settings[:vmname]}-vmware/#{$settings[:vmname]}/#{$settings[:vmname]}.vmx vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/host/delivery"
+    vim = RbVmomi::VIM.connect host: 'vcenter.ops.puppetlabs.net', user: "#{vcenter_settings["username"]}\@puppetlabs.com", password: "#{vcenter_settings["password"]}", insecure: 'true'
+    dc = vim.serviceInstance.find_datacenter('pdx_office') or fail "datacenter not found"
+    vm = dc.find_vm("learn") or fail "VM not found"
+    vm.PowerOnVM_Task.wait_for_completion
+    vm_ip = nil
+    3.times do
+      vm_ip = vm.guest_ip
+      break unless vm_ip == nil
+      sleep 30
+    end
+    scp_to("files/setup.sh", "root@#{vm_ip}", ".")
+    remote_sshpass_cmd("root@#{vm_ip}", "bash -x ./setup.sh")
   else
     cputs "Skipping - only publish the learning VM"
   end
@@ -733,4 +730,53 @@ def get_pe(pe_install_suffix)
   end
   return [ pe_tarball, agent_tarball ]
 end
+
+def sshpass_scp_to(file, host, remote_path)
+  puts "Sending #{file} to #{host}:#{remote_path}"
+  ex(%Q[scp -r #{file} #{host}:#{remote_path}])
+end
+
+def sshpass_scp_from(file, host, remote_path)
+  puts "Retrieving #{file} from #{host}:#{remote_path}"
+  ex(%Q[SSHPASS="puppet" sshpass -e scp -r #{host}:#{remote_path} #{file}])
+end
+
+def remote_sshpass_cmd(host, command, verbose = true)
+  check_tool('sshpass')
+  if verbose
+    puts "Executing '#{command}' on #{host}"
+    %x{SSHPASS="puppet" sshpass -e ssh -t #{host} '#{command.gsub("'", "'\\\\''")}'}
+  else
+    %x{SSHPASS="puppet" sshpass -e ssh -t #{host} '#{command.gsub("'", "'\\\\''")}' > /dev/null 2>&1}
+    if $?.success?
+      return true
+    else
+      raise RuntimeError
+    end
+  end
+end
+
+def check_tool(tool)
+  return true if has_tool(tool)
+  fail "#{tool} tool not found...exiting"
+end
+
+# ex combines the behavior of `%x{cmd}` and rake's `sh "cmd"`. `%x{cmd}` has
+# the benefit of returning the standard out of an executed command, enabling us
+# to query the file system, e.g. `contents = %x{ls}`. The drawback to `%x{cmd}`
+# is that on failure of a command (something returned non-zero) the return of
+# `%x{cmd}` is just an empty string. As such, we can't know if we succeeded.
+# Rake's `sh "cmd"`, on the other hand, will raise a RuntimeError if a command
+# does not return 0, but doesn't return any of the stdout from the command -
+# only true or false depending on its success or failure. With `ex(cmd)` we
+# purport to both return the results of the command execution (ala `%x{cmd}`)
+# while also raising an exception if a command does not succeed (ala `sh "cmd"`).
+def ex(command)
+  ret = %x[#{command}]
+  unless $?.success?
+    raise RuntimeError
+  end
+  ret
+end
+
 # vim: set sw=2 sts=2 et tw=80 :
