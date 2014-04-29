@@ -101,5 +101,7 @@ class localrepo {
     refreshonly => true,
     user        => root,
     group       => root,
+    timeout     => '14400',
+    
   }
 }
