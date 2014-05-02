@@ -509,7 +509,16 @@ task :shipvm do
   when /learning/
     destdir = "/mnt/nfs/Learning\ Puppet\ VM/"
   end
-  FileUtils.cp_r Dir.glob("#{CACHEDIR}/#{$settings[:vmname]}*"), destdir, :verbose => true
+  ## There seems to be an intermittent issue with copying to int-resources. Retry up to 3 times.
+  3.times do
+    begin
+      FileUtils.cp_r Dir.glob("#{CACHEDIR}/#{$settings[:vmname]}*"), destdir, :verbose => true
+      break
+    rescue
+      puts "Couldn't copy file(s), waiting 30 seconds then retrying..."
+      sleep 30
+    end
+  end
 end
 
 ## Publish to VMware
