@@ -596,6 +596,7 @@ def clone_vm(source, dest)
   dc = vim.serviceInstance.find_datacenter('pdx_office') or abort "datacenter not found"
   vm = dc.find_vm(source) or abort "Source VM not found"
   relocateSpec = RbVmomi::VIM.VirtualMachineRelocateSpec
+  relocateSpec.pool = "delivery"
   spec = RbVmomi::VIM.VirtualMachineCloneSpec(:location => relocateSpec,
                                      :powerOn => true,
                                      :template => false)
