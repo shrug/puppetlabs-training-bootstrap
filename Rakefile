@@ -550,6 +550,13 @@ task :publishvm do
 end
 
 task :cloud_install do
+  if $settings[:vmtype] == 'training'
+    $settings[:hostname] = "#{$settings[:vmtype]}.puppetlabs.vm"
+  else
+    $settings[:hostname] = "learn.localdomain"
+  end
+  prompt_vmos(args.vmos)
+  prompt_vmtype(args.vmtype)
   build_file("install.sh")
   vm_ip=clone_vm("pe-education-vm-template-centos-6.5", $settings[:vmname])
   sshpass_scp_to("#{CACHEDIR}/#{$settings[:pe_tarball]}", "root@#{vm_ip}", ".")
