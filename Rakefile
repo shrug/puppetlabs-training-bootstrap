@@ -592,8 +592,8 @@ def clone_vm(source, dest)
                     insecure: 'true')
   dc = vim.serviceInstance.find_datacenter('pdx_office') or abort "datacenter not found"
   vm = dc.find_vm(source) or abort "Source VM not found"
-  relocateSpec = VIM.VirtualMachineRelocateSpec
-  spec = VIM.VirtualMachineCloneSpec(:location => relocateSpec,
+  relocateSpec = RbVmomi::VIM.VirtualMachineRelocateSpec
+  spec = RbVmomi::VIM.VirtualMachineCloneSpec(:location => relocateSpec,
                                      :powerOn => true,
                                      :template => false)
   vm.CloneVM_Task(:folder => vm.parent, :name => dest, :spec => spec).wait_for_completion
