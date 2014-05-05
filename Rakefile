@@ -561,7 +561,7 @@ task :cloud_install , [:vmos,:vmtype] do |t,args|
   prompt_vmos(args.vmos)
   prompt_vmtype(args.vmtype)
   build_file("install.sh")
-  vm_ip=clone_vm("pe-education-vm-template-centos-6.5", $settings[:vmname])
+  vm_ip=clone_vm("Delivery/Release/pe-education-vm-template-centos-6.5", $settings[:vmname])
   sshpass_scp_to("#{CACHEDIR}/#{$settings[:pe_tarball]}", "root@#{vm_ip}", ".")
   sshpass_scp_to("#{CACHEDIR}/#{$settings[:agent_tarball]}", "root@#{vm_ip}", ".")
   sshpass_scp_to("#{BUILDDIR}/#{$settings[:vmos]}/install.sh", "root@#{vm_ip}", ".")
