@@ -549,7 +549,8 @@ task :publishvm do
   end
 end
 
-task :cloud_install do
+task :cloud_install , [:vmos,:vmtype] do |t,args|
+  args.with_defaults(:vmos => $settings[:vmos], :vmtype => $settings[:vmtype])
   if $settings[:vmtype] == 'training'
     $settings[:hostname] = "#{$settings[:vmtype]}.puppetlabs.vm"
   else
