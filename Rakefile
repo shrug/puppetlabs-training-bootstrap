@@ -556,6 +556,8 @@ task :cloud_install , [:vmos,:vmtype] do |t,args|
   else
     $settings[:hostname] = "learn.localdomain"
   end
+  $settings[:pe_tarball]    = @centos_pe_tarball
+  $settings[:agent_tarball] = @centos_agent_tarball
   prompt_vmos(args.vmos)
   prompt_vmtype(args.vmtype)
   build_file("install.sh")
