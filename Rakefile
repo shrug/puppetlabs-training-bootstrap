@@ -542,11 +542,16 @@ task :publishvm do
       break unless vm_ip == nil
       sleep 30
     end
-    scp_to("files/setup.sh", "root@#{vm_ip}", ".")
+    sshpass_scp_to("files/setup.sh", "root@#{vm_ip}", ".")
     remote_sshpass_cmd("root@#{vm_ip}", "bash -x ./setup.sh")
   else
     cputs "Skipping - only publish the learning VM"
   end
+end
+
+task :cloud_install do
+  require 'yaml'
+  require 'rbvmomi'
 end
 
 def download(url,path)
