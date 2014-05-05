@@ -84,11 +84,11 @@ task :init do
   STDOUT.flush
 
   # Set PTB repo
-  ptbrepo = nil || ENV['ptbrepo']
+  @ptbrepo = nil || ENV['ptbrepo']
   if File.exist?("#{ptbrepo_destination}/config")
     ptbrepo_default = File.read("#{ptbrepo_destination}/config").match(/url = (\S+)/)[1]
-    ptbrepo = ptbrepo_default
-    cputs "Current repo url: #{ptbrepo} (`rm` local repo to reset)"
+    @ptbrepo = ptbrepo_default
+    cputs "Current repo url: #{@ptbrepo} (`rm` local repo to reset)"
   else
     # Set PTB user
     cprint "Please choose a github user for puppetlabs-training-bootstrap [puppetlabs]: "
@@ -96,8 +96,8 @@ task :init do
     ptbuser = 'puppetlabs' if ptbuser.empty?
     ptbrepo_default = "git@github.com:#{ptbuser}/puppetlabs-training-bootstrap.git"
     cprint "Please choose a repo url [#{ptbrepo_default}]: "
-    ptbrepo = STDIN.gets.chomp
-    ptbrepo = ptbrepo_default if ptbrepo.empty?
+    @ptbrepo = STDIN.gets.chomp
+    @ptbrepo = ptbrepo_default if ptbrepo.empty?
   end
 
   # Set PTB branch
@@ -119,8 +119,8 @@ task :init do
   @ptb_build     = `git rev-parse --short #{@ptbbranch}`.strip
   @ptb_version ||= '[Testing Build]'
 
-  cputs "Cloning ptb: #{ptbrepo}, #{ptbrepo_destination}, #{@ptbbranch}"
-  gitclone ptbrepo, ptbrepo_destination, @ptbbranch
+  cputs "Cloning ptb: #{@ptbrepo}, #{ptbrepo_destination}, #{@ptbbranch}"
+  gitclone @ptbrepo, ptbrepo_destination, @ptbbranch
 end
 
 desc "Destroy VirtualBox instance"
@@ -550,8 +550,51 @@ task :publishvm do
 end
 
 task :cloud_install do
+  build_file("install.sh")
+  vm_ip=clone_vm("pe-education-vm-template-centos-6.5", $settings[:vmname])
+  sshpass_scp_to("#{CACHEDIR}/#{$settings[:pe_tarball]}", "root@#{vm_ip}", ".")
+  sshpass_scp_to("#{CACHEDIR}/#{$settings[:agent_tarball]}", "root@#{vm_ip}", ".")
+  sshpass_scp_to("#{BUILDDIR}/#{$settings[:vmos]}/install.sh", "root@#{vm_ip}", ".")
+  remote_sshpass_cmd("root@#{vm_ip}", "bash -x ./install.sh")  
+end
+
+task :jenkins_everything_is_cloudy, [:vmos] do |t,args|
+  args.with_defaults(:vmos => $settings[:vmos])
+  prompt_vmos(args.vmos)
+  Rake::Task[:init].invoke
+  Rake::Task[:cloud_install].invoke($settings[:vmos])
+  Rake::Task[:createovf].invoke($settings[:vmos])
+  Rake::Task[:createvmx].invoke($settings[:vmos])
+  Rake::Task[:createvbox].invoke($settings[:vmos])
+  Rake::Task[:vagrantize].invoke($settings[:vmos])
+  Rake::Task[:packagevm].invoke($settings[:vmos])
+  Rake::Task[:shipvm].invoke
+  Rake::Task[:publishvm].invoke
+end
+
+def clone_vm(source, dest)
   require 'yaml'
   require 'rbvmomi'
+  vcenter_settings = YAML::load(File.open("#{CACHEDIR}/.vmwarecfg.yml"))
+  vim = RbVmomi::VIM.connect(host: 'vcenter.ops.puppetlabs.net',
+                    user: "#{vcenter_settings["username"]}\@puppetlabs.com",
+                    password: "#{vcenter_settings["password"]}", 
+                    insecure: 'true')
+  dc = vim.serviceInstance.find_datacenter('pdx_office') or abort "datacenter not found"
+  vm = dc.find_vm(source) or abort "Source VM not found"
+  relocateSpec = VIM.VirtualMachineRelocateSpec
+  spec = VIM.VirtualMachineCloneSpec(:location => relocateSpec,
+                                     :powerOn => true,
+                                     :template => false)
+  vm.CloneVM_Task(:folder => vm.parent, :name => dest, :spec => spec).wait_for_completion
+  newvm = dc.find_vm(dest) or abort "Destination VM not found"
+  vm_ip = nil
+  3.times do
+    vm_ip = newvm.guest_ip
+    break unless vm_ip == nil
+    sleep 30
+  end
+  return vm_ip
 end
 
 def download(url,path)
