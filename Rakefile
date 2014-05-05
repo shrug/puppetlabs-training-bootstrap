@@ -553,8 +553,11 @@ task :cloud_install , [:vmos,:vmtype] do |t,args|
   args.with_defaults(:vmos => $settings[:vmos], :vmtype => $settings[:vmtype])
   if $settings[:vmtype] == 'training'
     $settings[:hostname] = "#{$settings[:vmtype]}.puppetlabs.vm"
+    $settings[:vmname] = "#{$settings[:vmos]}-6.5-pe-#{@real_pe_ver}".downcase
+    
   else
     $settings[:hostname] = "learn.localdomain"
+    $settings[:vmname] = "learn_puppet_#{$settings[:vmos]}-6.5-pe-#{@real_pe_ver}".downcase   
   end
   $settings[:pe_tarball]    = @centos_pe_tarball
   $settings[:agent_tarball] = @centos_agent_tarball
