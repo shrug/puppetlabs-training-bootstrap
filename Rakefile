@@ -534,7 +534,7 @@ task :publishvm do
     sh "/usr/bin/ovftool --noSSLVerify --network='delivery.puppetlabs.net' --datastore='instance1' -o --powerOffTarget -n=learn #{VMWAREDIR}/#{$settings[:vmname]}-vmware/#{$settings[:vmname]}/#{$settings[:vmname]}.vmx vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/host/delivery"
     vim = RbVmomi::VIM.connect host: 'vcenter.ops.puppetlabs.net', user: "#{vcenter_settings["username"]}\@puppetlabs.com", password: "#{vcenter_settings["password"]}", insecure: 'true'
     dc = vim.serviceInstance.find_datacenter('pdx_office') or fail "datacenter not found"
-    vm = dc.find_vm("learn") or fail "VM not found"
+    vm = dc.find_vm("Delivery/Release/learn") or fail "VM not found"
     vm.PowerOnVM_Task.wait_for_completion
     vm_ip = nil
     3.times do
@@ -600,7 +600,7 @@ def clone_vm(source, dest)
                                      :powerOn => true,
                                      :template => false)
   vm.CloneVM_Task(:folder => vm.parent, :name => dest, :spec => spec).wait_for_completion
-  newvm = dc.find_vm(dest) or abort "Destination VM not found"
+  newvm = dc.find_vm("Delivery/Release/#{dest}") or abort "Destination VM not found"
   vm_ip = nil
   3.times do
     vm_ip = newvm.guest_ip
