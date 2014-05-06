@@ -831,6 +831,15 @@ def check_tool(tool)
   fail "#{tool} tool not found...exiting"
 end
 
+def find_tool(tool)
+  ENV['PATH'].split(File::PATH_SEPARATOR).each do |root|
+     location = File.join(root, tool)
+     return location if FileTest.executable? location
+  end
+  return nil
+end
+alias :has_tool :find_tool
+
 # ex combines the behavior of `%x{cmd}` and rake's `sh "cmd"`. `%x{cmd}` has
 # the benefit of returning the standard out of an executed command, enabling us
 # to query the file system, e.g. `contents = %x{ls}`. The drawback to `%x{cmd}`
