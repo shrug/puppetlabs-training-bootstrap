@@ -803,7 +803,7 @@ end
 
 def sshpass_scp_to(file, host, remote_path)
   puts "Sending #{file} to #{host}:#{remote_path}"
-  ex(%Q[scp -r #{file} #{host}:#{remote_path}])
+  ex(%Q[SSHPASS="puppet" sshpass -e scp -r #{file} #{host}:#{remote_path}])
 end
 
 def sshpass_scp_from(file, host, remote_path)
