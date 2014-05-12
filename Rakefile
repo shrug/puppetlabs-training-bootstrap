@@ -815,9 +815,9 @@ def remote_sshpass_cmd(host, command, verbose = true)
   check_tool('sshpass')
   if verbose
     puts "Executing '#{command}' on #{host}"
-    %x{SSHPASS="puppet" sshpass -e ssh -t #{host} '#{command.gsub("'", "'\\\\''")}'}
+    %x{SSHPASS="puppet" sshpass -e ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -t #{host} '#{command.gsub("'", "'\\\\''")}'}
   else
-    %x{SSHPASS="puppet" sshpass -e ssh -t #{host} '#{command.gsub("'", "'\\\\''")}' > /dev/null 2>&1}
+    %x{SSHPASS="puppet" sshpass -e ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -t #{host} '#{command.gsub("'", "'\\\\''")}' > /dev/null 2>&1}
     if $?.success?
       return true
     else
