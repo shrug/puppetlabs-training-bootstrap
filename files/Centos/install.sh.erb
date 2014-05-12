@@ -35,7 +35,7 @@ mv /root/<%= $settings[:agent_tarball] %> /usr/src/installer/<%= @real_pe_ver %>
 <% if $settings[:vmtype] == "training" %>
 ln -s /usr/src/puppetlabs-training-bootstrap/scripts/classroom /root/bin
 <% end %>
-
+yum -y install git ruby augeas ruby-augeas rubygems patch
 yum -y upgrade #This takes a while
 cd /usr/src
 git clone git://github.com/puppetlabs/puppet.git puppet
@@ -58,5 +58,4 @@ rm -rf /etc/udev/rules.d/70-persistent-net.rules
 sed -i -e '/^HWADDR.*/d' /etc/sysconfig/network-scripts/ifcfg-eth0
 rm -rf /var/cache/yum/*
 yum -y clean all
-rm -rf /tmp/*
-echo "Puppet Labs #{$settings[:vmtype].to_s.capitalize} VM <%= @ptb_version %> (Build <%= @ptb_build %>)" > /etc/puppetlabs-release
+echo "Puppet Labs <%= $settings[:vmtype].to_s.capitalize %> VM <%= @ptb_version %> (Build <%= @ptb_build %>)" > /etc/puppetlabs-release

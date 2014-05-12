@@ -94,7 +94,7 @@ task :init do
     cprint "Please choose a github user for puppetlabs-training-bootstrap [puppetlabs]: "
     ptbuser = STDIN.gets.chomp
     ptbuser = 'puppetlabs' if ptbuser.empty?
-    ptbrepo_default = "git@github.com:#{ptbuser}/puppetlabs-training-bootstrap.git"
+    ptbrepo_default = "git://github.com/#{ptbuser}/puppetlabs-training-bootstrap.git"
     cprint "Please choose a repo url [#{ptbrepo_default}]: "
     @ptbrepo = STDIN.gets.chomp
     @ptbrepo = ptbrepo_default if ptbrepo.empty?
