@@ -97,7 +97,7 @@ task :init do
     ptbrepo_default = "git://github.com/#{ptbuser}/puppetlabs-training-bootstrap.git"
     cprint "Please choose a repo url [#{ptbrepo_default}]: "
     @ptbrepo = STDIN.gets.chomp
-    @ptbrepo = ptbrepo_default if ptbrepo.empty?
+    @ptbrepo = ptbrepo_default if @ptbrepo.empty?
   end
 
   # Set PTB branch
