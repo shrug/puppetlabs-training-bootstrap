@@ -568,7 +568,8 @@ task :cloud_install , [:vmos,:vmtype] do |t,args|
   sshpass_scp_to("#{CACHEDIR}/#{$settings[:pe_tarball]}", "root@#{vm_ip}", ".")
   sshpass_scp_to("#{CACHEDIR}/#{$settings[:agent_tarball]}", "root@#{vm_ip}", ".")
   sshpass_scp_to("#{BUILDDIR}/#{$settings[:vmos]}/install.sh", "root@#{vm_ip}", ".")
-  remote_sshpass_cmd("root@#{vm_ip}", "bash -x ./install.sh")  
+  remote_sshpass_cmd("root@#{vm_ip}", "bash -x ./install.sh")
+  retrieve_vm($settings[:vmname])
 end
 
 task :jenkins_everything_is_cloudy, [:vmos] do |t,args|
@@ -576,7 +577,7 @@ task :jenkins_everything_is_cloudy, [:vmos] do |t,args|
   prompt_vmos(args.vmos)
   Rake::Task[:init].invoke
   Rake::Task[:cloud_install].invoke($settings[:vmos])
-  Rake::Task[:createovf].invoke($settings[:vmos])
+  Rake::Task[:retrieve_vm].invoke
   Rake::Task[:createvmx].invoke($settings[:vmos])
   Rake::Task[:createvbox].invoke($settings[:vmos])
   Rake::Task[:vagrantize].invoke($settings[:vmos])
@@ -608,6 +609,39 @@ def clone_vm(source, dest)
     sleep 30
   end
   return vm_ip
+end
+
+def retrieve_vm(vmname)
+  require 'yaml'
+  vcenter_settings = YAML::load(File.open("#{CACHEDIR}/.vmwarecfg.yml"))
+  FileUtils.rm_rf("#{OVFDIR}/#{$settings[:vmname]}-ovf") if File.directory?("#{OVFDIR}/#{$settings[:vmname]}-ovf")
+  FileUtils.mkdir_p("#{OVFDIR}/#{$settings[:vmname]}-ovf")
+  sh "/usr/bin/ovftool --noSSLVerify vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/vm/Delivery/Release/#{vmname}  #{OVFDIR}/#{vmname}-ovf/" 
+end
+
+def create_ovf(vmname)
+  cputs "Converting Original VM to OVF..."
+  FileUtils.rm_rf("#{OVFDIR}/#{$settings[:vmname]}-ovf") if File.directory?("#{OVFDIR}/#{$settings[:vmname]}-ovf")
+  FileUtils.mkdir_p("#{OVFDIR}/#{$settings[:vmname]}-ovf")
+  sh "/usr/bin/ovftool -tt OVF --noSSLVerify vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/host/delivery/#{$settings[:vmname]} #{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}.ovf"
+end
+
+def create_vmx(vmname)
+  cputs "Converting Original VM to VMX..."
+    FileUtils.rm_rf("#{VMWAREDIR}/#{$settings[:vmname]}-vmware") if File.directory?("#{VMWAREDIR}/#{$settings[:vmname]}-vmware")
+    FileUtils.mkdir_p("#{VMWAREDIR}/#{$settings[:vmname]}-vmware")
+    system("'#{@ovftool_default}' --lax --targetType=VMX '#{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}.ovf' '#{VMWAREDIR}/#{$settings[:vmname]}-vmware'")
+
+    cputs 'Changing virtualhw.version = to "8"'
+    # this path is different on OSX
+    if hostos =~ /Darwin/
+      @vmxpath = "#{VMWAREDIR}/#{$settings[:vmname]}-vmware/#{$settings[:vmname]}.vmwarevm/#{$settings[:vmname]}.vmx"
+    else
+      @vmxpath = "#{VMWAREDIR}/#{$settings[:vmname]}-vmware/#{$settings[:vmname]}/#{$settings[:vmname]}.vmx"
+    end
+    content = File.read(@vmxpath)
+    content = content.gsub(/^virtualhw\.version = "\d+"$/, 'virtualhw.version = "8"')
+    File.open(@vmxpath, 'w') { |f| f.puts content }
 end
 
 def download(url,path)
