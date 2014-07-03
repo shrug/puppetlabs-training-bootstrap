@@ -569,8 +569,11 @@ task :cloud_install , [:vmos,:vmtype] do |t,args|
   sshpass_scp_to("#{CACHEDIR}/#{$settings[:agent_tarball]}", "root@#{vm_ip}", ".")
   sshpass_scp_to("#{BUILDDIR}/#{$settings[:vmos]}/install.sh", "root@#{vm_ip}", ".")
   remote_sshpass_cmd("root@#{vm_ip}", "bash -x ./install.sh")
+  puts "Powering off #{$settings[:vmname]}"
   vm.PowerOffVM_Task.wait_for_completion
+  puts "Retreiving #{$settings[:vmname]} as an OVF"
   retrieve_vm($settings[:vmname])
+  puts "Powering on #{$settings[:vmname]}"
   vm.PowerOnVM_Task.wait_for_completion
 end
 
