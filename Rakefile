@@ -564,12 +564,14 @@ task :cloud_install , [:vmos,:vmtype] do |t,args|
   prompt_vmos(args.vmos)
   prompt_vmtype(args.vmtype)
   build_file("install.sh")
-  vm_ip=clone_vm("Delivery/Release/pe-education-vm-template-centos-6.5", $settings[:vmname])
+  vm,vm_ip=clone_vm("Delivery/Release/pe-education-vm-template-centos-6.5", $settings[:vmname])
   sshpass_scp_to("#{CACHEDIR}/#{$settings[:pe_tarball]}", "root@#{vm_ip}", ".")
   sshpass_scp_to("#{CACHEDIR}/#{$settings[:agent_tarball]}", "root@#{vm_ip}", ".")
   sshpass_scp_to("#{BUILDDIR}/#{$settings[:vmos]}/install.sh", "root@#{vm_ip}", ".")
   remote_sshpass_cmd("root@#{vm_ip}", "bash -x ./install.sh")
+  vm.PowerOffVM_Task.wait_for_completion
   retrieve_vm($settings[:vmname])
+  vm.PowerOnVM_Task.wait_for_completion
 end
 
 task :jenkins_everything_is_cloudy, [:vmos] do |t,args|
@@ -608,7 +610,7 @@ def clone_vm(source, dest)
     break unless vm_ip == nil
     sleep 30
   end
-  return vm_ip
+  return vm,vm_ip
 end
 
 def retrieve_vm(vmname)
