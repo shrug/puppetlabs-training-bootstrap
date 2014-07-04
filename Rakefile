@@ -570,8 +570,9 @@ task :cloud_install , [:vmos,:vmtype] do |t,args|
   sshpass_scp_to("#{BUILDDIR}/#{$settings[:vmos]}/install.sh", "root@#{vm_ip}", ".")
   remote_sshpass_cmd("root@#{vm_ip}", "bash -x ./install.sh")
   puts "Powering off #{$settings[:vmname]}"
-  vm.PowerOffVM_Task.wait_for_completion
-  puts "Retreiving #{$settings[:vmname]} as an OVF"
+  remote_sshpass_cmd("root@#{vm_ip}", "shutdown -h now")
+  sleep 30
+  puts "Retrieving #{$settings[:vmname]} as an OVF"
   retrieve_vm($settings[:vmname])
   puts "Powering on #{$settings[:vmname]}"
   vm.PowerOnVM_Task.wait_for_completion
@@ -621,7 +622,7 @@ def retrieve_vm(vmname)
   vcenter_settings = YAML::load(File.open("#{CACHEDIR}/.vmwarecfg.yml"))
   FileUtils.rm_rf("#{OVFDIR}/#{$settings[:vmname]}-ovf") if File.directory?("#{OVFDIR}/#{$settings[:vmname]}-ovf")
   FileUtils.mkdir_p("#{OVFDIR}/#{$settings[:vmname]}-ovf")
-  sh "/usr/bin/ovftool --noSSLVerify vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/vm/Delivery/Release/#{vmname}  #{OVFDIR}/#{vmname}-ovf/" 
+  sh "/usr/bin/ovftool --noSSLVerify --powerOffSource vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/vm/Delivery/Release/#{vmname}  #{OVFDIR}/#{vmname}-ovf/" 
 end
 
 def create_ovf(vmname)
