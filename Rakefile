@@ -620,7 +620,8 @@ def retrieve_vm(vmname)
   vcenter_settings = YAML::load(File.open("#{CACHEDIR}/.vmwarecfg.yml"))
   FileUtils.rm_rf("#{OVFDIR}/#{$settings[:vmname]}-ovf") if File.directory?("#{OVFDIR}/#{$settings[:vmname]}-ovf")
   FileUtils.mkdir_p("#{OVFDIR}/#{$settings[:vmname]}-ovf")
-  sh "/usr/bin/ovftool --noSSLVerify --powerOffSource vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/vm/Delivery/Release/#{vmname}  #{OVFDIR}/#{vmname}-ovf/" 
+  sh "/usr/bin/ovftool --noSSLVerify --powerOffSource vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/vm/Delivery/Release/#{vmname}  #{OVFDIR}/"
+  FileUtils.mv("#{OVFDIR}/#{$settings[:vmname]}", "#{OVFDIR}/#{$settings[:vmname]}-ovf")
 end
 
 def create_ovf(vmname)
