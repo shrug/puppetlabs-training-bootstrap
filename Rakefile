@@ -625,7 +625,7 @@ def retrieve_vm(vmname)
   FileUtils.mv("#{OVFDIR}/#{$settings[:vmname]}", "#{OVFDIR}/#{$settings[:vmname]}-ovf")
   FileUtils.rm_rf("#{VAGRANTDIR}/#{$settings[:vmname]}") if File.directory?("#{VAGRANTDIR}/#{$settings[:vmname]}")
   FileUtils.mkdir_p("#{VAGRANTDIR}/#{$settings[:vmname]}")
-  FileUtils.cp(Dir.glob("#{OVFDIR}/#{$settings[:vmname]}-ovf/"), "#{VAGRANTDIR}/#{$settings[:vmname]}")
+  FileUtils.cp(Dir.glob("#{OVFDIR}/#{$settings[:vmname]}-ovf/*"), "#{VAGRANTDIR}/#{$settings[:vmname]}")
 end
 
 def create_ovf(vmname)
