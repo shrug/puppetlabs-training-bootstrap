@@ -416,7 +416,7 @@ task :createovf, [:vmos] do |t,args|
   system("VBoxManage export '#{$settings[:vmname]}' -o '#{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}.ovf'")
 end
 
-task :createvmx, [:vmos] => [:createovf] do |t,args|
+task :createvmx, [:vmos] do |t,args|
   args.with_defaults(:vmos => $settings[:vmos])
   prompt_vmos(args.vmos)
 
