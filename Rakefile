@@ -370,6 +370,7 @@ task :everything, [:vmos] do |t,args|
   Rake::Task[:startvm].invoke($settings[:vmos])
   Rake::Task[:unmountiso].invoke($settings[:vmos])
   Rake::Task[:createovf].invoke($settings[:vmos])
+  Rake::Task[:unmountiso].invoke($settings[:vmos])
   Rake::Task[:createvmx].invoke($settings[:vmos])
   Rake::Task[:createvbox].invoke($settings[:vmos])
   Rake::Task[:vagrantize].invoke($settings[:vmos])
@@ -420,7 +421,6 @@ task :createvmx, [:vmos] do |t,args|
   args.with_defaults(:vmos => $settings[:vmos])
   prompt_vmos(args.vmos)
 
-  Rake::Task[:unmountiso].invoke($settings[:vmos])
   cputs "Converting OVF to VMX..."
   FileUtils.rm_rf("#{VMWAREDIR}/#{$settings[:vmname]}-vmware") if File.directory?("#{VMWAREDIR}/#{$settings[:vmname]}-vmware")
   FileUtils.mkdir_p("#{VMWAREDIR}/#{$settings[:vmname]}-vmware")
@@ -564,17 +564,17 @@ task :cloud_install , [:vmos,:vmtype] do |t,args|
   prompt_vmos(args.vmos)
   prompt_vmtype(args.vmtype)
   build_file("install.sh")
+  puts "Cloning source template"
   newvm,vm_ip=clone_vm("Delivery/Release/pe-education-vm-template-centos-6.5", $settings[:vmname])
   sshpass_scp_to("#{CACHEDIR}/#{$settings[:pe_tarball]}", "root@#{vm_ip}", ".")
   sshpass_scp_to("#{CACHEDIR}/#{$settings[:agent_tarball]}", "root@#{vm_ip}", ".")
   sshpass_scp_to("#{BUILDDIR}/#{$settings[:vmos]}/install.sh", "root@#{vm_ip}", ".")
+  puts "Configuring VM and installing PE"
   remote_sshpass_cmd("root@#{vm_ip}", "bash -x ./install.sh")
   puts "Powering off #{$settings[:vmname]}"
   newvm.PowerOffVM_Task.wait_for_completion
   puts "Retrieving #{$settings[:vmname]} as an OVF"
   retrieve_vm($settings[:vmname])
-  puts "Powering on #{$settings[:vmname]}"
-  newvm.PowerOnVM_Task.wait_for_completion
 end
 
 task :jenkins_everything_is_cloudy, [:vmos] do |t,args|
@@ -619,7 +619,7 @@ def retrieve_vm(vmname)
   require 'yaml'
   vcenter_settings = YAML::load(File.open("#{CACHEDIR}/.vmwarecfg.yml"))
   FileUtils.rm_rf("#{OVFDIR}/#{$settings[:vmname]}-ovf") if File.directory?("#{OVFDIR}/#{$settings[:vmname]}-ovf")
-  FileUtils.mkdir_p("#{OVFDIR}/#{$settings[:vmname]}-ovf")
+  FileUtils.mkdir_p("#{OVFDIR}/")
   sh "/usr/bin/ovftool --noSSLVerify --powerOffSource vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/vm/Delivery/Release/#{vmname}  #{OVFDIR}/"
   FileUtils.mv("#{OVFDIR}/#{$settings[:vmname]}", "#{OVFDIR}/#{$settings[:vmname]}-ovf")
 end
