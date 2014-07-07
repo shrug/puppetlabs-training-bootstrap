@@ -570,12 +570,11 @@ task :cloud_install , [:vmos,:vmtype] do |t,args|
   sshpass_scp_to("#{BUILDDIR}/#{$settings[:vmos]}/install.sh", "root@#{vm_ip}", ".")
   remote_sshpass_cmd("root@#{vm_ip}", "bash -x ./install.sh")
   puts "Powering off #{$settings[:vmname]}"
-  remote_sshpass_cmd("root@#{vm_ip}", "shutdown -h now")
-  sleep 30
+  newvm.PowerOffVM_Task.wait_for_completion
   puts "Retrieving #{$settings[:vmname]} as an OVF"
   retrieve_vm($settings[:vmname])
   puts "Powering on #{$settings[:vmname]}"
-  vm.PowerOnVM_Task.wait_for_completion
+  newvm.PowerOnVM_Task.wait_for_completion
 end
 
 task :jenkins_everything_is_cloudy, [:vmos] do |t,args|
@@ -583,7 +582,6 @@ task :jenkins_everything_is_cloudy, [:vmos] do |t,args|
   prompt_vmos(args.vmos)
   Rake::Task[:init].invoke
   Rake::Task[:cloud_install].invoke($settings[:vmos])
-  Rake::Task[:retrieve_vm].invoke
   Rake::Task[:createvmx].invoke($settings[:vmos])
   Rake::Task[:createvbox].invoke($settings[:vmos])
   Rake::Task[:vagrantize].invoke($settings[:vmos])
