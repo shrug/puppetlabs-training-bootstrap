@@ -19,7 +19,7 @@ get_ssh_keys ()
 set -u
 
 # MAKE SURE THIS IS SSL!
-URL="https://raw.github.com/puppetlabs/puppetlabs-sshkeys/master/templates/ssh/authorized_keys"
+URL="https://raw.githubusercontent.com/puppetlabs/puppetlabs-sshkeys/master/templates/ssh/authorized_keys"
 
 if [[ `uname` == CYGWIN* ]]
     then
