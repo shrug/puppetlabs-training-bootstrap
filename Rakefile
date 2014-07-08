@@ -538,12 +538,12 @@ task :publishvm do
     cputs "Powering on VM"
     vm.PowerOnVM_Task.wait_for_completion
     vm_ip = nil
-    3.times do
+    5.times do
       vm_ip = vm.guest_ip
       cputs "vm.guest_ip is #{vm.guest_ip}"
       cputs "vm_ip is #{vm_ip}"
       break unless vm_ip == nil
-      sleep 30
+      sleep 60
     end
     sshpass_scp_to("files/setup.sh", "root@#{vm_ip}", ".")
     remote_sshpass_cmd("root@#{vm_ip}", "bash -x ./setup.sh")
