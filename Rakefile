@@ -531,7 +531,7 @@ task :publishvm do
     vcenter_settings = YAML::load(File.open("#{CACHEDIR}/.vmwarecfg.yml"))
     # Do the thing here
     cputs "Publishing to vSphere"
-    sh "/usr/bin/ovftool --noSSLVerify --network='delivery.puppetlabs.net' --datastore='instance1' -o --powerOffTarget -n=learn #{VMWAREDIR}/#{$settings[:vmname]}-vmware/#{$settings[:vmname]}/#{$settings[:vmname]}.vmx vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/host/delivery"
+    sh "/usr/bin/ovftool --noSSLVerify --network='delivery.puppetlabs.net' --datastore='instance1' -o --powerOffTarget -n=learn #{VMWAREDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}.ovf vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/host/delivery"
     vim = RbVmomi::VIM.connect host: 'vcenter.ops.puppetlabs.net', user: "#{vcenter_settings["username"]}\@puppetlabs.com", password: "#{vcenter_settings["password"]}", insecure: 'true'
     dc = vim.serviceInstance.find_datacenter('pdx_office') or fail "datacenter not found"
     vm = dc.find_vm("Delivery/Release/learn") or fail "VM not found"
