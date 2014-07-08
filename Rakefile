@@ -634,6 +634,9 @@ def retrieve_vm(vmname)
   system("VBoxManage modifyvm '#{$settings[:vmname]}' --memory #{args.mem} --nic1 nat --usb off --audio none")
   system("VBoxManage storagectl '#{$settings[:vmname]}' --name 'IDE Controller' --add ide")
   system("VBoxManage storageattach '#{$settings[:vmname]}' --storagectl 'IDE Controller' --port 0 --device 0 --type hdd --medium #{$settings[:vmname]}-disk1.vmdk")
+  ensure
+    Dir.chdir(BASEDIR)
+  end
 end
 
 def create_ovf(vmname)
