@@ -444,7 +444,7 @@ task :createvbox, [:vmos] do |t,args|
   cputs "Making copy of VM for VBOX..."
   FileUtils.rm_rf("#{VBOXDIR}/#{$settings[:vmname]}-vbox") if File.directory?("#{VBOXDIR}/#{$settings[:vmname]}-vbox")
   FileUtils.mkdir_p("#{VBOXDIR}/#{$settings[:vmname]}-vbox")
-  system("rsync -a '#{VAGRANTDIR}/#{$settings[:vmname]}' '#{VBOXDIR}/#{$settings[:vmname]}-vbox'")
+  system("rsync -a '#{VAGRANTDIR}/#{$settings[:vmname]}/' '#{VBOXDIR}/#{$settings[:vmname]}-vbox'")
   orig = "#{VBOXDIR}/#{$settings[:vmname]}-vbox/#{$settings[:vmname]}.vbox"
   FileUtils.cp orig, "#{orig}.backup", :preserve => true
   xml_file = File.read(orig)
