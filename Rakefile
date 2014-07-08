@@ -628,6 +628,7 @@ def retrieve_vm(vmname)
   system("VBoxManage export '#{$settings[:vmname]}' -o '#{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}.ovf'")
   FileUtils.cp("#{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}-disk1.vmdk", "#{VAGRANTDIR}/#{$settings[:vmname]}")
   begin
+    dir = "#{BUILDDIR}/vagrant"
     cputs "Creating VM '#{$settings[:vmname]}' in #{dir} ..."
     system("VBoxManage createvm --name '#{$settings[:vmname]}' --basefolder '#{dir}' --register --ostype #{ostype}")
     Dir.chdir("#{dir}/#{$settings[:vmname]}")
