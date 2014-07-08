@@ -59,14 +59,12 @@ class learning::install {
     command => '/opt/puppet/bin/gem install trollop -v 2.0',
     unless  => '/opt/puppet/bin/gem list trollop -i',
     require => Exec['install-pe'],
-    timeout     => '14400',                  
   }
   
   exec { 'install serverspec':
     command => '/opt/puppet/bin/gem install serverspec',
     unless  => '/opt/puppet/bin/gem list serverspec -i',
     require => Exec['install-pe'],
-    timeout     => '14400',
   }
 
 }

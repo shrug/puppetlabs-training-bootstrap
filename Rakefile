@@ -643,31 +643,6 @@ def retrieve_vm(vmname)
   end
 end
 
-def create_ovf(vmname)
-  cputs "Converting Original VM to OVF..."
-  FileUtils.rm_rf("#{OVFDIR}/#{$settings[:vmname]}-ovf") if File.directory?("#{OVFDIR}/#{$settings[:vmname]}-ovf")
-  FileUtils.mkdir_p("#{OVFDIR}/#{$settings[:vmname]}-ovf")
-  sh "/usr/bin/ovftool -tt OVF --noSSLVerify vi://#{vcenter_settings["username"]}\@puppetlabs.com:#{vcenter_settings["password"]}@vcenter.ops.puppetlabs.net/pdx_office/host/delivery/#{$settings[:vmname]} #{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}.ovf"
-end
-
-def create_vmx(vmname)
-  cputs "Converting Original VM to VMX..."
-    FileUtils.rm_rf("#{VMWAREDIR}/#{$settings[:vmname]}-vmware") if File.directory?("#{VMWAREDIR}/#{$settings[:vmname]}-vmware")
-    FileUtils.mkdir_p("#{VMWAREDIR}/#{$settings[:vmname]}-vmware")
-    system("'#{@ovftool_default}' --lax --targetType=VMX '#{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}.ovf' '#{VMWAREDIR}/#{$settings[:vmname]}-vmware'")
-
-    cputs 'Changing virtualhw.version = to "8"'
-    # this path is different on OSX
-    if hostos =~ /Darwin/
-      @vmxpath = "#{VMWAREDIR}/#{$settings[:vmname]}-vmware/#{$settings[:vmname]}.vmwarevm/#{$settings[:vmname]}.vmx"
-    else
-      @vmxpath = "#{VMWAREDIR}/#{$settings[:vmname]}-vmware/#{$settings[:vmname]}/#{$settings[:vmname]}.vmx"
-    end
-    content = File.read(@vmxpath)
-    content = content.gsub(/^virtualhw\.version = "\d+"$/, 'virtualhw.version = "8"')
-    File.open(@vmxpath, 'w') { |f| f.puts content }
-end
-
 def download(url,path)
   u = URI.parse(url)
   net = Net::HTTP.new(u.host, u.port)
