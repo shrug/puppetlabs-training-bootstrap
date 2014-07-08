@@ -444,7 +444,7 @@ task :createvbox, [:vmos] do |t,args|
   cputs "Making copy of VM for VBOX..."
   FileUtils.rm_rf("#{VBOXDIR}/#{$settings[:vmname]}-vbox") if File.directory?("#{VBOXDIR}/#{$settings[:vmname]}-vbox")
   FileUtils.mkdir_p("#{VBOXDIR}/#{$settings[:vmname]}-vbox")
-  system("rsync -a '#{VAGRANTDIR}/#{$settings[:vmname]}/' '#{VBOXDIR}/#{$settings[:vmname]}-vbox'")
+  system("rsync -a '#{VAGRANTDIR}/#{$settings[:vmname]}' '#{VBOXDIR}/#{$settings[:vmname]}-vbox'")
   orig = "#{VBOXDIR}/#{$settings[:vmname]}-vbox/#{$settings[:vmname]}.vbox"
   FileUtils.cp orig, "#{orig}.backup", :preserve => true
   xml_file = File.read(orig)
@@ -625,7 +625,15 @@ def retrieve_vm(vmname)
   FileUtils.mv("#{OVFDIR}/#{$settings[:vmname]}", "#{OVFDIR}/#{$settings[:vmname]}-ovf")
   FileUtils.rm_rf("#{VAGRANTDIR}/#{$settings[:vmname]}") if File.directory?("#{VAGRANTDIR}/#{$settings[:vmname]}")
   FileUtils.mkdir_p("#{VAGRANTDIR}/#{$settings[:vmname]}")
-  FileUtils.cp(Dir.glob("#{OVFDIR}/#{$settings[:vmname]}-ovf/*"), "#{VAGRANTDIR}/#{$settings[:vmname]}")
+  system("VBoxManage export '#{$settings[:vmname]}' -o '#{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}.ovf'")
+  FileUtils.cp("#{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}-disk1.vmdk"), "#{VAGRANTDIR}/#{$settings[:vmname]}")
+  cputs "Creating VM '#{$settings[:vmname]}' in #{dir} ..."
+  system("VBoxManage createvm --name '#{$settings[:vmname]}' --basefolder '#{dir}' --register --ostype #{ostype}")
+  Dir.chdir("#{dir}/#{$settings[:vmname]}")
+  cputs "Configuring VM settings..."
+  system("VBoxManage modifyvm '#{$settings[:vmname]}' --memory #{args.mem} --nic1 nat --usb off --audio none")
+  system("VBoxManage storagectl '#{$settings[:vmname]}' --name 'IDE Controller' --add ide")
+  system("VBoxManage storageattach '#{$settings[:vmname]}' --storagectl 'IDE Controller' --port 0 --device 0 --type hdd --medium #{$settings[:vmname]}-disk1.vmdk")
 end
 
 def create_ovf(vmname)
