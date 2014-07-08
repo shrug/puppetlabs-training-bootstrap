@@ -629,7 +629,7 @@ def retrieve_vm(vmname)
   begin
     dir = "#{BUILDDIR}/vagrant"
     cputs "Creating VM '#{$settings[:vmname]}' in #{dir} ..."
-    system("VBoxManage createvm --name '#{$settings[:vmname]}' --basefolder '#{dir}' --register --ostype #{ostype}")
+    system("VBoxManage createvm --name '#{$settings[:vmname]}' --basefolder '#{dir}' --register --ostype RedHat")
     Dir.chdir("#{dir}/#{$settings[:vmname]}")
     cputs "Configuring VM settings..."
     system("VBoxManage modifyvm '#{$settings[:vmname]}' --memory #{args.mem} --nic1 nat --usb off --audio none")
