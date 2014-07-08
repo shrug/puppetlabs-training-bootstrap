@@ -625,7 +625,6 @@ def retrieve_vm(vmname)
   FileUtils.mv("#{OVFDIR}/#{$settings[:vmname]}", "#{OVFDIR}/#{$settings[:vmname]}-ovf")
   FileUtils.rm_rf("#{VAGRANTDIR}/#{$settings[:vmname]}") if File.directory?("#{VAGRANTDIR}/#{$settings[:vmname]}")
   FileUtils.mkdir_p("#{VAGRANTDIR}/#{$settings[:vmname]}")
-  system("VBoxManage export '#{$settings[:vmname]}' -o '#{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}.ovf'")
   FileUtils.cp("#{OVFDIR}/#{$settings[:vmname]}-ovf/#{$settings[:vmname]}-disk1.vmdk", "#{VAGRANTDIR}/#{$settings[:vmname]}")
   begin
     dir = "#{BUILDDIR}/vagrant"
