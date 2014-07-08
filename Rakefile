@@ -535,10 +535,13 @@ task :publishvm do
     vim = RbVmomi::VIM.connect host: 'vcenter.ops.puppetlabs.net', user: "#{vcenter_settings["username"]}\@puppetlabs.com", password: "#{vcenter_settings["password"]}", insecure: 'true'
     dc = vim.serviceInstance.find_datacenter('pdx_office') or fail "datacenter not found"
     vm = dc.find_vm("learn") or fail "VM not found"
+    cputs "Powering on VM"
     vm.PowerOnVM_Task.wait_for_completion
     vm_ip = nil
     3.times do
       vm_ip = vm.guest_ip
+      cputs "vm.guest_ip is #{vm.guest_ip}"
+      cputs "vm_ip is #{vm_ip}"
       break unless vm_ip == nil
       sleep 30
     end
