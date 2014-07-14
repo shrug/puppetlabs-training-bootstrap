@@ -38,6 +38,7 @@ ln -s /usr/src/puppetlabs-training-bootstrap/scripts/classroom /root/bin
 yum -y install git ruby augeas ruby-augeas rubygems patch
 yum -y upgrade #This takes a while
 # Don't prompt us to accept ssh host keys for github
+mkdir -p ~/.ssh/
 echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 cd /usr/src
 git clone git://github.com/puppetlabs/puppet.git puppet
