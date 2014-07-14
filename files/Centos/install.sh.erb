@@ -37,6 +37,7 @@ ln -s /usr/src/puppetlabs-training-bootstrap/scripts/classroom /root/bin
 <% end %>
 yum -y install git ruby augeas ruby-augeas rubygems patch
 yum -y upgrade #This takes a while
+echo "Puppet Labs <%= $settings[:vmtype].to_s.capitalize %> VM <%= @ptb_version %> (Build <%= @ptb_build %>)" > /etc/puppetlabs-release
 # Don't prompt us to accept ssh host keys for github
 mkdir -p ~/.ssh/
 echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
@@ -61,6 +62,5 @@ rm -rf /etc/udev/rules.d/70-persistent-net.rules
 sed -i -e '/^HWADDR.*/d' /etc/sysconfig/network-scripts/ifcfg-eth0
 rm -rf /var/cache/yum/*
 yum -y clean all
-echo "Puppet Labs <%= $settings[:vmtype].to_s.capitalize %> VM <%= @ptb_version %> (Build <%= @ptb_build %>)" > /etc/puppetlabs-release
 sync
 sync
