@@ -85,19 +85,21 @@ task :init do
 
   # Set PTB repo
   @ptbrepo = nil || ENV['ptbrepo']
-  if File.exist?("#{ptbrepo_destination}/config")
-    ptbrepo_default = File.read("#{ptbrepo_destination}/config").match(/url = (\S+)/)[1]
-    @ptbrepo = ptbrepo_default
-    cputs "Current repo url: #{@ptbrepo} (`rm` local repo to reset)"
-  else
-    # Set PTB user
-    cprint "Please choose a github user for puppetlabs-training-bootstrap [puppetlabs]: "
-    ptbuser = STDIN.gets.chomp
-    ptbuser = 'puppetlabs' if ptbuser.empty?
-    ptbrepo_default = "git://github.com/#{ptbuser}/puppetlabs-training-bootstrap.git"
-    cprint "Please choose a repo url [#{ptbrepo_default}]: "
-    @ptbrepo = STDIN.gets.chomp
-    @ptbrepo = ptbrepo_default if @ptbrepo.empty?
+  unless @ptbrepo
+    if File.exist?("#{ptbrepo_destination}/config")
+      ptbrepo_default = File.read("#{ptbrepo_destination}/config").match(/url = (\S+)/)[1]
+      @ptbrepo = ptbrepo_default
+      cputs "Current repo url: #{@ptbrepo} (`rm` local repo to reset)"
+    else
+      # Set PTB user
+      cprint "Please choose a github user for puppetlabs-training-bootstrap [puppetlabs]: "
+      ptbuser = STDIN.gets.chomp
+      ptbuser = 'puppetlabs' if ptbuser.empty?
+      ptbrepo_default = "git://github.com/#{ptbuser}/puppetlabs-training-bootstrap.git"
+      cprint "Please choose a repo url [#{ptbrepo_default}]: "
+      @ptbrepo = STDIN.gets.chomp
+      @ptbrepo = ptbrepo_default if @ptbrepo.empty?
+    end
   end
 
   # Set PTB branch
