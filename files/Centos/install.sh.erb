@@ -35,7 +35,7 @@ mv /root/<%= $settings[:agent_tarball] %> /usr/src/installer/<%= @real_pe_ver %>
 <% if $settings[:vmtype] == "training" %>
 ln -s /usr/src/puppetlabs-training-bootstrap/scripts/classroom /root/bin
 <% end %>
-yum -y install git ruby augeas ruby-augeas rubygems patch
+yum -y install git ruby augeas ruby-augeas rubygems patch rubygem-json
 yum -y upgrade #This takes a while
 echo "Puppet Labs <%= $settings[:vmtype].to_s.capitalize %> VM <%= @ptb_version %> (Build <%= @ptb_build %>)" > /etc/puppetlabs-release
 # Don't prompt us to accept ssh host keys for github
