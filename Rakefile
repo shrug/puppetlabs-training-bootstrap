@@ -583,6 +583,23 @@ task :cloud_install , [:vmos,:vmtype] do |t,args|
   newvm.Destroy_Task.wait_for_completion
 end
 
+desc "Zip up the VMs (unimplemented)"
+task :cloud_packagevm, [:vmos] do |t,args|
+  args.with_defaults(:vmos => $settings[:vmos])
+  prompt_vmos(args.vmos)
+
+  filename = "#{CACHEDIR}/#{$settings[:vmname]}"
+
+  system("zip -rj '#{filename}-ovf.zip'    '#{OVFDIR}/#{$settings[:vmname]}-ovf'")
+  system("zip -rj '#{filename}-vmware.zip' '#{VMWAREDIR}/#{$settings[:vmname]}-vmware'")
+  system("zip -rj '#{filename}-vbox.zip'   '#{VBOXDIR}/#{$settings[:vmname]}-vbox'")
+
+  system("#{@md5} '#{filename}-ovf.zip'    > '#{filename}-ovf.zip.md5'")
+  system("#{@md5} '#{filename}-vmware.zip' > '#{filename}-vmware.zip.md5'")
+  system("#{@md5} '#{filename}-vbox.zip'   > '#{filename}-vbox.zip.md5'")
+  # zip & md5 vagrant
+end
+
 task :jenkins_everything_is_cloudy, [:vmos] do |t,args|
   args.with_defaults(:vmos => $settings[:vmos])
   prompt_vmos(args.vmos)
@@ -591,7 +608,7 @@ task :jenkins_everything_is_cloudy, [:vmos] do |t,args|
   Rake::Task[:createvmx].invoke($settings[:vmos])
   Rake::Task[:createvbox].invoke($settings[:vmos])
   Rake::Task[:vagrantize].invoke($settings[:vmos])
-  Rake::Task[:packagevm].invoke($settings[:vmos])
+  Rake::Task[:cloud_packagevm].invoke($settings[:vmos])
   Rake::Task[:shipvm].invoke
   Rake::Task[:publishvm].invoke
 end
