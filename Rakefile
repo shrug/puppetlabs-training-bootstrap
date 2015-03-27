@@ -230,6 +230,7 @@ def retrieve_vm_as_ova(vmname)
     verbose(false) do
       sh(%Q</usr/bin/ovftool --noSSLVerify --targetType=OVA --compress=9 --name=#{ovaname} --powerOffSource vi://#{vcenter_settings['username']}\\@puppetlabs.com:#{vcenter_settings['password']}@vmware-vc2.ops.puppetlabs.net/opdx2/vm/vmpooler/centos-6-i386/#{vmname}  #{OVFDIR}/>)
     end
+    File.chmod(0644, File.join(OVFDIR, "#{ovaname}.ova"))
   end
   File.join(OVFDIR, ovaname) + ".ova"
 end
